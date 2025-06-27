@@ -1,15 +1,10 @@
 package fr.imacaron
 
-import android.app.ComponentCaller
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.startActivityForResult
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +35,7 @@ class MainActivity : ComponentActivity() {
         if(resultCode == RESULT_OK && requestCode == 1) {
             if(data != null) {
                 val uri = data.data!!
-                val stream = contentResolver.openOutputStream(uri!!)!!
+                val stream = contentResolver.openOutputStream(uri)!!
                 stream.write(text.toByteArray())
                 stream.close()
             }

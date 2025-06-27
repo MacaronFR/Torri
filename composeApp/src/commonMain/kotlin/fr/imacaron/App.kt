@@ -26,10 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.composables.icons.lucide.Lucide
@@ -37,7 +34,6 @@ import com.composables.icons.lucide.RefreshCw
 import com.composables.icons.lucide.Save
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -89,7 +85,7 @@ class ItemsViewModel(private val dataStore: DataStore<Preferences>): ViewModel()
     }
 
     suspend fun reset() {
-        itemsTotal.forEach { (key, value) -> itemsTotal[key] = 0 }
+        itemsTotal.forEach { (key, _) -> itemsTotal[key] = 0 }
         save()
     }
 

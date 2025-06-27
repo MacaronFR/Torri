@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -47,9 +46,6 @@ kotlin {
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
             implementation("androidx.datastore:datastore:1.1.7")
             implementation("androidx.datastore:datastore-preferences:1.1.7")
-        }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }
