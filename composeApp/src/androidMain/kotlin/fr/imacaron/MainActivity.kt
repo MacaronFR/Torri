@@ -31,7 +31,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        println("requestCode: $requestCode, resultCode: $resultCode")
         if(resultCode == RESULT_OK && requestCode == 1) {
             if(data != null) {
                 val uri = data.data!!
