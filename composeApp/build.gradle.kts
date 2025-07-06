@@ -46,6 +46,7 @@ kotlin {
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
             implementation("androidx.datastore:datastore:1.1.7")
             implementation("androidx.datastore:datastore-preferences:1.1.7")
+            implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.2")
         }
     }
 }
