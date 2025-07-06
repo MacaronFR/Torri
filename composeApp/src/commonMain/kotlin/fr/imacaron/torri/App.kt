@@ -1,6 +1,7 @@
 package fr.imacaron
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,9 +31,12 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.composables.icons.lucide.CircleMinus
+import com.composables.icons.lucide.CirclePlus
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.RefreshCw
 import com.composables.icons.lucide.Save
+import fr.imacaron.torri.ui.AppTheme
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -105,7 +110,7 @@ val data = listOf(
 
 @Composable
 fun ItemView(item: Item, total: Int, add: () -> Unit, remove: () -> Unit) {
-    Card {
+    Card(Modifier.clickable { add() }) {
         Box(Modifier.padding(4.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(
@@ -114,8 +119,12 @@ fun ItemView(item: Item, total: Int, add: () -> Unit, remove: () -> Unit) {
                 )
                 Text(item.name)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                    Button(onClick = { if(total > 0) remove() }) { Text("-") }
-                    Button(onClick = add) { Text("+") }
+                    Button(onClick = { if(total > 0) remove() }) {
+                        Icon(Lucide.CircleMinus, contentDescription = "Retirer un article", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                    Button(onClick = add) {
+                        Icon(Lucide.CirclePlus, contentDescription = "Retirer un article", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -137,7 +146,7 @@ fun App(dataStore: DataStore<Preferences>) {
             }
         }
     }
-    MaterialTheme {
+    AppTheme {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -148,12 +157,12 @@ fun App(dataStore: DataStore<Preferences>) {
                                 itemsViewModel.reset()
                             }
                         }) {
-                            Image(Lucide.RefreshCw, "reset")
+                            Icon(Lucide.RefreshCw, contentDescription = "Réinitialiser", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton({
                             saveToFile("vente.csv", itemsViewModel.toCSV())
                         }) {
-                            Image(Lucide.Save, "save")
+                            Icon(Lucide.Save, contentDescription = "Sauvegarder", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 )
