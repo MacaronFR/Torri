@@ -18,4 +18,5 @@ val dataStore = createDataStore {
     requireNotNull(documentDir).path + "/$DATA_STORE_FILE_NAME"
 }
 
+@Suppress("unused", "FunctionName")
 fun MainViewController() = ComposeUIViewController { App(dataStore) }
