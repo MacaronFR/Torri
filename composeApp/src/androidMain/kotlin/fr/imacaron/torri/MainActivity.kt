@@ -1,11 +1,13 @@
-package fr.imacaron
+package fr.imacaron.torri
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("SourceLockedOrientationActivity")
@@ -13,7 +15,7 @@ class MainActivity : ComponentActivity() {
         activity = this
         enableEdgeToEdge()
         if(resources.getBoolean(R.bool.force_portrait)) {
-            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         super.onCreate(savedInstanceState)
         fun createDataStore() = createDataStore { applicationContext.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath }
@@ -31,14 +33,13 @@ class MainActivity : ComponentActivity() {
             putExtra(Intent.EXTRA_TITLE, file)
             this@MainActivity.text = text
         }
-        startActivityForResult(intent, 1)
+        resultLauncher.launch(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if(resultCode == RESULT_OK && requestCode == 1) {
-            if(data != null) {
-                val uri = data.data!!
+    val resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if(result.resultCode == RESULT_OK) {
+            if(result.data != null) {
+                var uri = result.data!!.data!!
                 val stream = contentResolver.openOutputStream(uri)!!
                 stream.write(text.toByteArray())
                 stream.close()

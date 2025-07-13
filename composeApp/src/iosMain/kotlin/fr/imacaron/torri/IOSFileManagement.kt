@@ -1,4 +1,4 @@
-package fr.imacaron
+package fr.imacaron.torri
 
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -14,7 +14,8 @@ import platform.Foundation.writeToFile
 @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual fun saveToFile(file: String, text: String) {
 	val path = fileManager.URLForDirectory(NSDocumentDirectory, NSUserDomainMask, null, true, null)
-    NSString.create(text).dataUsingEncoding(encoding = NSUTF8StringEncoding)?.writeToFile(path!!.path + "/$file", atomically = true)
+    NSString.create(text)?.dataUsingEncoding(encoding = NSUTF8StringEncoding)
+		?.writeToFile(path!!.path + "/$file", atomically = true)
 }
 
 private val fileManager = NSFileManager.defaultManager

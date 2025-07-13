@@ -1,4 +1,4 @@
-package fr.imacaron
+package fr.imacaron.torri
 
 import androidx.compose.ui.window.ComposeUIViewController
 import kotlinx.cinterop.ExperimentalForeignApi

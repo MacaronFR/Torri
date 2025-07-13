@@ -1,4 +1,4 @@
-package fr.imacaron
+package fr.imacaron.torri
 
 lateinit var activity: MainActivity
 

@@ -52,11 +52,11 @@ kotlin {
 }
 
 android {
-    namespace = "fr.imacaron"
+    namespace = "fr.imacaron.torri"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "fr.imacaron"
+        applicationId = "fr.imacaron.torri"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

@@ -5,8 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
-import fr.imacaron.data
-import kotlinx.coroutines.GlobalScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -17,7 +16,7 @@ class ItemsViewModel(private val dataStore: DataStore<Preferences>): ViewModel()
 	val itemsTotal = mutableStateMapOf<String, Int>()
 
 	init {
-		GlobalScope.launch {
+		viewModelScope.launch {
 			dataStore.data.collect { pref ->
 				items.forEach { item ->
 					itemsTotal[item.name] = pref[intPreferencesKey(item.name)] ?: 0
@@ -40,17 +39,19 @@ class ItemsViewModel(private val dataStore: DataStore<Preferences>): ViewModel()
 		}
 	}
 
-	suspend fun save() {
-		dataStore.updateData {
-			it.toMutablePreferences().apply {
-				items.forEach { item ->
-					this[intPreferencesKey(item.name)] = itemsTotal[item.name]!!
+	fun save() {
+		viewModelScope.launch {
+			dataStore.updateData {
+				it.toMutablePreferences().apply {
+					items.forEach { item ->
+						this[intPreferencesKey(item.name)] = itemsTotal[item.name]!!
+					}
 				}
 			}
 		}
 	}
 
-	suspend fun reset() {
+	fun reset() {
 		itemsTotal.forEach { (key, _) -> itemsTotal[key] = 0 }
 		save()
 	}

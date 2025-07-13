@@ -6,8 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import fr.imacaron.data
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -18,7 +16,7 @@ class CommandViewModel(private val dataStore: DataStore<Preferences>): ViewModel
 	val command = mutableStateMapOf<Item, Int>()
 
 	init {
-		GlobalScope.launch {
+		viewModelScope.launch {
 			dataStore.data.collect { pref ->
 				items.forEach { item ->
 					command[item] = pref[intPreferencesKey(item.name + "_command")] ?: 0

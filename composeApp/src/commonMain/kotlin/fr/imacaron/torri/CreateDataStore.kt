@@ -1,4 +1,4 @@
-package fr.imacaron
+package fr.imacaron.torri
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
