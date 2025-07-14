@@ -1,4 +1,4 @@
-package fr.imacaron.torri
+package fr.imacaron.torri.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleMinus
 import com.composables.icons.lucide.CirclePlus
 import com.composables.icons.lucide.Lucide
+import fr.imacaron.torri.Item
 import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources

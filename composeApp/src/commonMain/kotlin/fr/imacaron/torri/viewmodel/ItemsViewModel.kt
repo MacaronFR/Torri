@@ -1,4 +1,4 @@
-package fr.imacaron.torri
+package fr.imacaron.torri.viewmodel
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.datastore.core.DataStore
@@ -6,33 +6,36 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.imacaron.torri.data
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
 
-class CommandViewModel(private val dataStore: DataStore<Preferences>): ViewModel() {
+class ItemsViewModel(private val dataStore: DataStore<Preferences>): ViewModel() {
 	val items = data
-	val command = mutableStateMapOf<Item, Int>()
+	val itemsTotal = mutableStateMapOf<String, Int>()
 
 	init {
 		viewModelScope.launch {
 			dataStore.data.collect { pref ->
 				items.forEach { item ->
-					command[item] = pref[intPreferencesKey(item.name + "_command")] ?: 0
+					itemsTotal[item.name] = pref[intPreferencesKey(item.name)] ?: 0
 				}
 			}
 		}
 	}
 
-	fun add(item: Item) {
-		command[item] = command[item]!! + 1
+	fun add(name: String): () -> Unit {
+		return {
+			itemsTotal[name] = itemsTotal[name]!! + 1
+		}
 	}
 
-	fun remove(item: Item) {
-		command[item]?.let {
-			if(it > 0) {
-				command[item] = it -1
+	fun remove(name: String): () -> Unit {
+		return {
+			if(itemsTotal[name]!! > 0) {
+				itemsTotal[name] = itemsTotal[name]!! - 1
 			}
 		}
 	}
@@ -42,7 +45,7 @@ class CommandViewModel(private val dataStore: DataStore<Preferences>): ViewModel
 			dataStore.updateData {
 				it.toMutablePreferences().apply {
 					items.forEach { item ->
-						this[intPreferencesKey(item.name + "_command")] = command[item]!!
+						this[intPreferencesKey(item.name)] = itemsTotal[item.name]!!
 					}
 				}
 			}
@@ -50,7 +53,11 @@ class CommandViewModel(private val dataStore: DataStore<Preferences>): ViewModel
 	}
 
 	fun reset() {
-		command.forEach { (key, _) -> command[key] = 0 }
+		itemsTotal.forEach { (key, _) -> itemsTotal[key] = 0 }
 		save()
+	}
+
+	fun toCSV(): String {
+		return "Article;Total\n" + itemsTotal.map { (key, value) -> "$key;$value" }.joinToString("\n")
 	}
 }

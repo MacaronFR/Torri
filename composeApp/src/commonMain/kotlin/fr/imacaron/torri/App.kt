@@ -1,33 +1,43 @@
 package fr.imacaron.torri
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.savedstate.read
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.composables.icons.lucide.Command
+import com.composables.icons.lucide.DollarSign
+import com.composables.icons.lucide.Inbox
+import com.composables.icons.lucide.Lucide
+import fr.imacaron.torri.components.AppBar
+import fr.imacaron.torri.components.BottomBar
+import fr.imacaron.torri.components.SideBar
+import fr.imacaron.torri.data.AppDataBase
+import fr.imacaron.torri.screen.CommandScreen
+import fr.imacaron.torri.screen.ItemAddScreen
+import fr.imacaron.torri.screen.ItemScreen
+import fr.imacaron.torri.screen.PriceListAddScreen
+import fr.imacaron.torri.screen.PriceListEditScreen
+import fr.imacaron.torri.screen.PriceListScreen
 import fr.imacaron.torri.ui.AppTheme
+import fr.imacaron.torri.viewmodel.CommandViewModel
+import fr.imacaron.torri.viewmodel.ItemsViewModel
+import fr.imacaron.torri.viewmodel.PriceListViewModel
+import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 val data = listOf(
@@ -39,12 +49,29 @@ val data = listOf(
     Item("Canette", "canette")
 )
 
+enum class Destination(val route: String, val label: String, val icon: ImageVector) {
+    COMMAND("command", "Commande", Lucide.Command),
+    ITEMS("items", "Produits", Lucide.Inbox),
+    ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
+    PRICE_LIST("pricelist", "Tarifs", Lucide.DollarSign),
+    PRICE_LIST_ADD("pricelist/add", "Ajouter un tarif", Lucide.DollarSign),
+    PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier un tarif", Lucide.DollarSign);
+
+    fun routeWithArg(vararg args: Pair<String, String>): String {
+        var route = this.route
+        args.forEach { route = route.replace("{${it.first}}", it.second) }
+        return route
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun App(dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass) {
+fun App(dataStore: DataStore<Preferences>, dataBase: AppDataBase, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass) {
     val itemsViewModel = viewModel { ItemsViewModel(dataStore) }
     val commandViewModel = viewModel { CommandViewModel(dataStore) }
+    val savedItems = viewModel { SavedItemViewModel(dataBase) }
+    val priceList = viewModel { PriceListViewModel(dataBase) }
     val displaySidePanel = windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.EXPANDED)
@@ -57,6 +84,7 @@ fun App(dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = cu
     val portrait = LocalWindowInfo.current.containerSize.let {
         it.width < it.height
     }
+    val navigationController = rememberNavController()
     LifecycleStartEffect(Unit) {
         onStopOrDispose {
             itemsViewModel.save()
@@ -65,61 +93,27 @@ fun App(dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = cu
     }
     AppTheme {
         Scaffold(
-            topBar = { AppBar(itemsViewModel, commandViewModel) }
+            topBar = { AppBar(itemsViewModel, commandViewModel, navigationController) },
+            bottomBar = { if(!displaySidePanel) { BottomBar(navigationController) } }
         ) {
-            if(portrait) {
-                Column(Modifier.padding(it)) {
-                    CommandScreen(cols, itemsViewModel, commandViewModel, displaySidePanel)
-                }
-            } else {
-                Row(Modifier.padding(it), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    CommandScreen(cols, itemsViewModel, commandViewModel, displaySidePanel, Modifier.weight(1f))
-                }
+            if(displaySidePanel) {
+                SideBar(it)
             }
-        }
-    }
-}
-
-@Composable
-fun CommandScreen(cols: Int, itemsViewModel: ItemsViewModel, commandViewModel: CommandViewModel, displaySidePanel: Boolean, modifier: Modifier = Modifier) {
-    LazyVerticalGrid(
-        GridCells.Fixed(cols),
-        contentPadding = PaddingValues(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier
-    ) {
-        items(itemsViewModel.items) { item ->
-            ItemView(
-                item,
-                itemsViewModel.itemsTotal[item.name]!!,
-                {
-                    itemsViewModel.add(item.name)()
-                    commandViewModel.add(item)
-                },
-                {
-                    itemsViewModel.remove(item.name)()
-                    commandViewModel.remove(item)
-                }
-            )
-        }
-    }
-    if(displaySidePanel) {
-        val total = commandViewModel.command.values.sum()
-        Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Card(Modifier.padding(4.dp).fillMaxWidth()) {
-                Text("Commande en cours :", style = MaterialTheme.typography.displaySmall)
-                if(total == 0) {
-                    Text("Aucun article")
-                }
-                commandViewModel.command.filter { it.value > 0 }.forEach { (item, total) ->
-                    Text("${item.name} : x$total")
-                }
-            }
-            Card(Modifier.padding(4.dp).fillMaxWidth()) {
-                Text("Total : $total article${if(total > 1) "s" else ""}")
-                Button({ commandViewModel.reset() } ) {
-                    Text("Valider")
+            NavHost(
+                navigationController,
+                startDestination = Destination.COMMAND.route,
+                Modifier.padding(it)
+            ) {
+                composable(Destination.COMMAND.route) { CommandScreen(cols, itemsViewModel, commandViewModel, displaySidePanel) }
+                composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
+                composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
+                composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
+                composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems,navigationController) }
+                composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
+                    val id = backStackEntry.arguments?.read {
+                        this.getStringOrNull("id")?.toLongOrNull()
+                    } ?: 0L
+                    PriceListEditScreen(priceList, savedItems,navigationController, id)
                 }
             }
         }
