@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,7 +21,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +68,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 			}
 		}
 		Card(Modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
-			Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+			Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp).fillMaxWidth()) {
 				Text("Produits", style = MaterialTheme.typography.headlineSmall)
 				IconButton({ addItemDialog = true }) {
 					Icon(Lucide.Plus, contentDescription = "Ajouter un produit")
