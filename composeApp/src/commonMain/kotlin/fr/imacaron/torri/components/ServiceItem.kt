@@ -1,5 +1,6 @@
 package fr.imacaron.torri.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,8 +21,8 @@ import fr.imacaron.torri.data.ServiceEntity
 import kotlinx.datetime.number
 
 @Composable
-fun ServiceItem(service: ServiceEntity, priceList: PriceListWithItem, delete: () -> Unit) {
-	Card(Modifier.fillMaxWidth()) {
+fun ServiceItem(service: ServiceEntity, priceList: PriceListWithItem, delete: () -> Unit, onClick: () -> Unit) {
+	Card(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
 		Row(Modifier.padding(16.dp, 8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
 			Column {
 				Text("Service du ${service.date.day}/${service.date.month.number}/${service.date.year}")

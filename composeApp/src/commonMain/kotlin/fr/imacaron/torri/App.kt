@@ -34,6 +34,7 @@ import fr.imacaron.torri.screen.PriceListAddScreen
 import fr.imacaron.torri.screen.PriceListEditScreen
 import fr.imacaron.torri.screen.PriceListScreen
 import fr.imacaron.torri.screen.ServiceAddScreen
+import fr.imacaron.torri.screen.ServiceDetailScreen
 import fr.imacaron.torri.screen.ServiceScreen
 import fr.imacaron.torri.ui.AppTheme
 import fr.imacaron.torri.viewmodel.CommandViewModel
@@ -44,6 +45,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     SERVICE("service", "Service", Lucide.BookOpen),
+    SERVICE_DETAIL("service/{id}", "Détail du service", Lucide.BookOpen),
     SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
     SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
     SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
@@ -95,9 +97,16 @@ fun App(dataBase: AppDataBase, windowSizeClass: WindowSizeClass = currentWindowA
                 startDestination = Destination.SERVICE.route,
                 Modifier.padding(it)
             ) {
+                composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
+                composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
+                    val id = backStackEntry.arguments?.read {
+                        this.getStringOrNull("id")?.toLongOrNull()
+                    } ?: 0L
+                    ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
+                }
+                composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
                 composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel) }
-                composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
-                composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
+                composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
                 composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
                 composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems,navigationController) }
                 composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
@@ -106,9 +115,8 @@ fun App(dataBase: AppDataBase, windowSizeClass: WindowSizeClass = currentWindowA
                     } ?: 0L
                     PriceListEditScreen(priceList, savedItems,navigationController, id)
                 }
-                composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
-                composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
-                composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
+                composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
+                composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
             }
         }
     }

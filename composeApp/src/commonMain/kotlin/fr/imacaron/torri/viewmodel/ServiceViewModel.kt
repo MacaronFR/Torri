@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.imacaron.torri.data.AppDataBase
+import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.ServiceEntity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -58,5 +59,9 @@ class ServiceViewModel(private val db: AppDataBase): ViewModel() {
 			db.serviceDao().delete(service)
 			services.remove(service)
 		}
+	}
+
+	suspend fun loadServiceCommand(service: ServiceEntity): List<CommandEntity> {
+		return db.commandDao().getByService(service.idService)
 	}
 }

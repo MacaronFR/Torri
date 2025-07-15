@@ -56,6 +56,8 @@ fun ServiceScreen(serviceViewModel: ServiceViewModel, priceListViewModel: PriceL
 				item {
 					ServiceItem(service, priceListViewModel.priceLists.find { it.priceList.idPriceList == service.idPriceList }!!, {
 						serviceViewModel.delete(service)
+					}, {
+						navController.navigate(Destination.SERVICE_DETAIL.routeWithArg("id" to service.idService.toString()))
 					})
 				}
 			}
