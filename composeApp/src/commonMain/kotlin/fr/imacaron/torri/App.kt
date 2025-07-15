@@ -42,15 +42,6 @@ import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-val data = listOf(
-    Item("Sandwich Jambon", "jambon"),
-    Item("Sandwich Poulet", "poulet"),
-    Item("Glace", "glace"),
-    Item("Popcorn", "popcorn"),
-    Item("Gateau", "gateau"),
-    Item("Canette", "canette")
-)
-
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     SERVICE("service", "Service", Lucide.BookOpen),
     SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
