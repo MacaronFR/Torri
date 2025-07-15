@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Banknote
+import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.ShieldQuestion
 import fr.imacaron.torri.data.CommandEntity
@@ -57,6 +58,7 @@ fun CommandList(commands: List<CommandEntity>, commandViewModel: CommandViewMode
 						Text("Commande #${index + 1}, total ${command.total} ${priceList.currency}", style = MaterialTheme.typography.headlineSmall)
 						val icon = when(command.payementMethod) {
 							"ESP" -> Lucide.Banknote
+							"CB" -> Lucide.CreditCard
 							else -> Lucide.ShieldQuestion
 						}
 						Icon(icon, "Méthode de paiement", Modifier.size(24.dp))

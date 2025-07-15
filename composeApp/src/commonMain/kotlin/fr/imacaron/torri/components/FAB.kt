@@ -27,6 +27,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.composables.icons.lucide.Banknote
 import com.composables.icons.lucide.CheckCheck
+import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.viewmodel.CommandViewModel
@@ -52,6 +53,11 @@ fun FAB(navController: NavController, commandViewModel: CommandViewModel) {
 							RadioButton(payementMethod == "ESP", { payementMethod = "ESP" })
 							Icon(Lucide.Banknote, contentDescription = "Paiement espèce")
 							Text("Espèce")
+						}
+						Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { payementMethod = "CB" }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+							RadioButton(payementMethod == "CB", { payementMethod = "CB" })
+							Icon(Lucide.CreditCard, contentDescription = "Paiement carte bancaire")
+							Text("Carte Bancaire")
 						}
 					}
 					Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
