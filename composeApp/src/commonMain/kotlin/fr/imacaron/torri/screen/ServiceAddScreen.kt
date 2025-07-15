@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.composables.icons.lucide.ChevronRight
-import com.composables.icons.lucide.ChevronsRight
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.viewmodel.PriceListViewModel
