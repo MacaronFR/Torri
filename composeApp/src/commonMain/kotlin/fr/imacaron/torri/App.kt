@@ -23,7 +23,6 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.composables.icons.lucide.BookOpen
 import com.composables.icons.lucide.Command
 import com.composables.icons.lucide.DollarSign
-import com.composables.icons.lucide.DoorOpen
 import com.composables.icons.lucide.Inbox
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.components.AppBar

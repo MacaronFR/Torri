@@ -10,8 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
-import androidx.navigation.NavOptionsBuilder
 import fr.imacaron.torri.Destination
 
 @Composable

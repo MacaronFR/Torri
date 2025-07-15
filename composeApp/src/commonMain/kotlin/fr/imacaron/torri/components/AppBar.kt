@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dataStore: DataStore<Preferences>, reload: () -> Unit = {}) {
+fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dataStore: DataStore<Preferences>) {
 	val scope = rememberCoroutineScope()
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { controller, destination, arguments ->
