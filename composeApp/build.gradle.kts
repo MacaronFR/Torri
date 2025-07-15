@@ -40,6 +40,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+            implementation(compose.animation)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
@@ -52,6 +53,7 @@ kotlin {
             implementation("androidx.datastore:datastore-preferences:1.1.7")
             implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.2")
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta03")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
         }
     }
 }

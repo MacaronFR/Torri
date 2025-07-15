@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         fun createDataStore() = createDataStore { applicationContext.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath }
         setContent {
-            App(createDataStore(), getRoomDataBase(getDatabaseBuilder(this)))
+            App(getRoomDataBase(getDatabaseBuilder(this)))
         }
     }
 

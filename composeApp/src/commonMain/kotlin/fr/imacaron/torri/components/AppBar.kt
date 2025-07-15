@@ -1,30 +1,47 @@
 package fr.imacaron.torri.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.composables.icons.lucide.ArrowLeft
+import com.composables.icons.lucide.Banknote
+import com.composables.icons.lucide.BookText
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
-import com.composables.icons.lucide.RefreshCw
 import com.composables.icons.lucide.Save
+import com.composables.icons.lucide.Send
 import fr.imacaron.torri.Destination
-import fr.imacaron.torri.saveToFile
 import fr.imacaron.torri.viewmodel.CommandViewModel
-import fr.imacaron.torri.viewmodel.ItemsViewModel
+import fr.imacaron.torri.viewmodel.ServiceViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(itemsViewModel: ItemsViewModel, commandViewModel: CommandViewModel, navController: NavController) {
+fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, commandViewModel: CommandViewModel) {
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { controller, destination, arguments ->
 		destination.route?.let { currentRoute = it }
@@ -33,21 +50,25 @@ fun AppBar(itemsViewModel: ItemsViewModel, commandViewModel: CommandViewModel, n
 		{ Text("Torri") },
 		actions = {
 			when(currentRoute) {
-				Destination.COMMAND.route -> {
-					IconButton({
-						itemsViewModel.reset()
-						commandViewModel.reset()
-					}) {
-						Icon(
-							Lucide.RefreshCw,
-							contentDescription = "Réinitialiser",
-							tint = MaterialTheme.colorScheme.primary
-						)
+				Destination.SERVICE_COMMAND.route -> {
+					var doneDialog by remember { mutableStateOf(false) }
+					IconButton({ navController.navigate(Destination.SERVICE_COMMAND_DETAIL.route) }) {
+						Icon(Lucide.BookText, "Détails des commandes", tint = MaterialTheme.colorScheme.primary)
 					}
-					IconButton({
-						saveToFile("vente.csv", itemsViewModel.toCSV())
-					}) {
-						Icon(Lucide.Save, contentDescription = "Sauvegarder", tint = MaterialTheme.colorScheme.primary)
+					IconButton( { doneDialog = true} ) {
+						Icon(Lucide.Send, "Terminé et sauvegarder le service", tint = MaterialTheme.colorScheme.primary)
+					}
+					if(doneDialog) {
+						AlertDialog(
+							{ doneDialog = false },
+							{ TextButton({
+								serviceViewModel.setCurrentServiceDone()
+								doneDialog = false
+								navController.navigate(Destination.SERVICE.route)
+							}) { Text("Confirmer")} },
+							title = { Text("Clore et sauvegarder le service") },
+							text = { Text("Un fois clos, ce service ne pourra plus être modifié") }
+						)
 					}
 				}
 				Destination.ITEMS.route -> {
