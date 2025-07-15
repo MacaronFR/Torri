@@ -96,8 +96,14 @@ fun ItemSelection(cols: Int, items: List<ItemEntity>, prices: List<PriceListItem
 		horizontalArrangement = Arrangement.spacedBy(8.dp)
 	) {
 		items(items) { item ->
-			val price = prices.find { it.idItem == item.idItem }
-			ItemView(item, price?.price ?: .0, priceList.priceList.currency, { commandViewModel.add(item) }, { commandViewModel.remove(item) })
+			prices.find { it.idItem == item.idItem }?.let { price ->
+				ItemView(
+					item,
+					price.price,
+					priceList.priceList.currency,
+					{ commandViewModel.add(price) },
+					{ commandViewModel.remove(price) })
+			}
 		}
 	}
 }

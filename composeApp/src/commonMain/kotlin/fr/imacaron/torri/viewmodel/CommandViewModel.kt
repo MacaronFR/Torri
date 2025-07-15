@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.CommandEntity
-import fr.imacaron.torri.data.ItemEntity
+import fr.imacaron.torri.data.CommandPriceListItemEntity
+import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
+import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.ServiceEntity
 import kotlinx.coroutines.launch
 import kotlin.collections.set
@@ -49,19 +51,19 @@ class CommandViewModel(
 	fun loadService() {
 		_service?.let { s ->
 			viewModelScope.launch {
-				db.priceListItemDao().getAlByPriceList(s.idPriceList).forEach { prices[it.idItem] = it.price }
+				db.priceListItemDao().getAlByPriceList(s.idPriceList).forEach { prices[it.idPriceListItem] = it.price }
 			}
 		}
 	}
 
-	fun add(item: ItemEntity) {
-		command[item.idItem] = command[item.idItem]?.let { it + 1 } ?: 1
+	fun add(item: PriceListItemEntity) {
+		command[item.idPriceListItem] = command[item.idPriceListItem]?.let { it + 1 } ?: 1
 	}
 
-	fun remove(item: ItemEntity) {
-		command[item.idItem]?.let {
+	fun remove(item: PriceListItemEntity) {
+		command[item.idPriceListItem]?.let {
 			if(it > 0) {
-				command[item.idItem] = it -1
+				command[item.idPriceListItem] = it -1
 			}
 		}
 	}
@@ -72,15 +74,22 @@ class CommandViewModel(
 		}
 		_service?.let { s ->
 			viewModelScope.launch {
-				db.commandDao().insert(
+				val id = db.commandDao().insert(
 					CommandEntity(
 						idService = s.idService,
 						payementMethod = method,
 						total = command.map { prices[it.key]!! * it.value }.sum()
 					)
 				)
+				db.commandPriceListItemDao().insertAll(command.map { (idPriceListItem, quantity) ->
+					CommandPriceListItemEntity(idCommand = id, idPriceListItem = idPriceListItem, quantity = quantity)
+				})
 				command.clear()
 			}
 		}
+	}
+
+	suspend fun loadCommandDetail(command: CommandEntity): List<CommandPriceListItemsWithPriceListItem> {
+		return db.commandPriceListItemDao().getByCommand(command.idCommand)
 	}
 }

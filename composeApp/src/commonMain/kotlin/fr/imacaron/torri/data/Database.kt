@@ -34,6 +34,7 @@ abstract class AppDataBase: RoomDatabase() {
 	abstract fun priceListItemDao(): PriceListItemDao
 	abstract fun commandDao(): CommandDao
 	abstract fun serviceDao(): ServiceDao
+	abstract fun commandPriceListItemDao(): CommandPriceListItemDao
 }
 
 @Suppress("NO_ACTUAL_FOR_EXPECT", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")

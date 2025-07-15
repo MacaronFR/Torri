@@ -1,9 +1,12 @@
 package fr.imacaron.torri.data
 
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Relation
 
 @Dao
 interface CommandPriceListItemDao {
@@ -12,6 +15,9 @@ interface CommandPriceListItemDao {
 
 	@Insert
 	suspend fun insertAll(commandPriceListItems: List<CommandPriceListItemEntity>): List<Long>
+
+	@Query("SELECT * FROM CommandPriceListItemEntity WHERE idCommand = :idCommand")
+	suspend fun getByCommand(idCommand: Long): List<CommandPriceListItemsWithPriceListItem>
 }
 
 @Entity
@@ -20,4 +26,12 @@ data class CommandPriceListItemEntity(
 	val idCommand: Long,
 	val idPriceListItem: Long,
 	var quantity: Int
+)
+
+data class CommandPriceListItemsWithPriceListItem(
+	@Embedded val commandPriceListItem: CommandPriceListItemEntity,
+	@Relation(
+		parentColumn = "idPriceListItem",
+		entityColumn = "idPriceListItem"
+	) val priceListItem: PriceListItemEntity
 )

@@ -55,7 +55,7 @@ fun ServiceScreen(serviceViewModel: ServiceViewModel, priceListViewModel: PriceL
 			serviceViewModel.services.forEach { service ->
 				item {
 					ServiceItem(service, priceListViewModel.priceLists.find { it.priceList.idPriceList == service.idPriceList }!!, {
-						serviceViewModel.services.remove(service)
+						serviceViewModel.delete(service)
 					})
 				}
 			}

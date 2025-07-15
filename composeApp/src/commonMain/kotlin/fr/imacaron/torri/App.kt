@@ -117,7 +117,7 @@ fun App(dataBase: AppDataBase, windowSizeClass: WindowSizeClass = currentWindowA
                 }
                 composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
                 composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
-                composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList) }
+                composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
             }
         }
     }
