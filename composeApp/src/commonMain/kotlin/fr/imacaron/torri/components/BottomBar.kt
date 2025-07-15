@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
+import androidx.navigation.NavOptionsBuilder
 import fr.imacaron.torri.Destination
 
 @Composable
@@ -19,10 +21,11 @@ fun BottomBar(navController: NavController) {
 		currentRoute = destination.route ?: ""
 	}
 	NavigationBar {
+
 		Destination.entries.filter { '/' !in it.route }.forEach { dest ->
 			NavigationBarItem(
 				selected = currentRoute == dest.route,
-				onClick = { navController.navigate(dest.route) },
+				onClick = { navController.navigate(dest.route) { popUpTo(Destination.SERVICE.route) { inclusive = true } } },
 				icon = { Icon(dest.icon, contentDescription = "Icone de ${dest.label}") },
 				label = { Text(dest.label) }
 			)

@@ -32,7 +32,7 @@ fun ServiceAddScreen(priceListViewModel: PriceListViewModel, serviceViewModel: S
 			items(priceListViewModel.priceLists) {
 				Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable {
 					serviceViewModel.create(it.priceList.idPriceList)
-					navController.navigate(Destination.SERVICE_COMMAND.route)
+					navController.navigate(Destination.SERVICE_COMMAND.route) { popUpTo(Destination.SERVICE.route) { inclusive = false  } }
 				}.padding(16.dp, 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
 					Text("${it.priceList.name} (${it.priceList.currency})", style = MaterialTheme.typography.titleLarge)
 					Icon(Lucide.ChevronRight, "Sélectionner")
