@@ -8,6 +8,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,6 +23,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.composables.icons.lucide.BookOpen
 import com.composables.icons.lucide.Command
 import com.composables.icons.lucide.DollarSign
+import com.composables.icons.lucide.DoorOpen
 import com.composables.icons.lucide.Inbox
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.components.AppBar
@@ -30,6 +35,8 @@ import fr.imacaron.torri.screen.CommandDetailScreen
 import fr.imacaron.torri.screen.CommandScreen
 import fr.imacaron.torri.screen.ItemAddScreen
 import fr.imacaron.torri.screen.ItemScreen
+import fr.imacaron.torri.screen.LoadingScreen
+import fr.imacaron.torri.screen.LoginScreen
 import fr.imacaron.torri.screen.PriceListAddScreen
 import fr.imacaron.torri.screen.PriceListEditScreen
 import fr.imacaron.torri.screen.PriceListScreen
@@ -42,6 +49,9 @@ import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
+
+val activated = booleanPreferencesKey("activated")
+val clientKey = stringPreferencesKey("clientID")
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     SERVICE("service", "Service", Lucide.BookOpen),
@@ -65,7 +75,33 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun App(dataBase: AppDataBase, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass) {
+fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass) {
+    var loggedIn by remember { mutableStateOf<Boolean?>(null) }
+    val licenceRegistration = LicenceRegistration()
+    LaunchedEffect(dataStore) {
+        dataStore.data.collect {
+            if(it[activated] != true) {
+                println("GO TO LOGIN")
+                loggedIn = false
+            } else {
+                println("CHECK")
+                println("CLIENT ID: ${it[clientKey]}")
+                licenceRegistration.validate(it[clientKey] ?: "").onSuccess {
+                    println("GO TO MAIN")
+                    loggedIn = true
+                }.onFailure {
+                    println("GO TO LOGIN")
+                    loggedIn = false
+                    dataStore.updateData { pref ->
+                        pref.toMutablePreferences().apply {
+                            set(activated, false)
+                            set(clientKey, "")
+                        }
+                    }
+                }
+            }
+        }
+    }
     val savedItems = viewModel { SavedItemViewModel(dataBase) }
     val priceList = viewModel { PriceListViewModel(dataBase) }
     val serviceViewModel = viewModel { ServiceViewModel(dataBase) }
@@ -84,39 +120,45 @@ fun App(dataBase: AppDataBase, windowSizeClass: WindowSizeClass = currentWindowA
     }
     val navigationController = rememberNavController()
     AppTheme {
-        Scaffold(
-            topBar = { AppBar(navigationController, serviceViewModel, commandViewModel) },
-            bottomBar = { if(!displaySidePanel) { BottomBar(navigationController) } },
-            floatingActionButton = { if(!displaySidePanel) { FAB(navigationController, commandViewModel) } },
-        ) {
-            if(displaySidePanel) {
-                SideBar(it)
-            }
-            NavHost(
-                navigationController,
-                startDestination = Destination.SERVICE.route,
-                Modifier.padding(it)
+        if(loggedIn == false) {
+            LoginScreen(dataStore, licenceRegistration)
+        } else if(loggedIn == null) {
+            LoadingScreen()
+        } else {
+            Scaffold(
+                topBar = { AppBar(navigationController, serviceViewModel, dataStore) },
+                bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
+                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel) } },
             ) {
-                composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
-                composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
-                    val id = backStackEntry.arguments?.read {
-                        this.getStringOrNull("id")?.toLongOrNull()
-                    } ?: 0L
-                    ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
+                if (displaySidePanel) {
+                    SideBar(it)
                 }
-                composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
-                composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel) }
-                composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
-                composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
-                composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems,navigationController) }
-                composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
-                    val id = backStackEntry.arguments?.read {
-                        this.getStringOrNull("id")?.toLongOrNull()
-                    } ?: 0L
-                    PriceListEditScreen(priceList, savedItems,navigationController, id)
+                NavHost(
+                    navigationController,
+                    startDestination = Destination.SERVICE.route,
+                    Modifier.padding(it)
+                ) {
+                    composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
+                    composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
+                        val id = backStackEntry.arguments?.read {
+                            this.getStringOrNull("id")?.toLongOrNull()
+                        } ?: 0L
+                        ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
+                    }
+                    composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
+                    composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel) }
+                    composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
+                    composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
+                    composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems, navigationController) }
+                    composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
+                        val id = backStackEntry.arguments?.read {
+                            this.getStringOrNull("id")?.toLongOrNull()
+                        } ?: 0L
+                        PriceListEditScreen(priceList, savedItems, navigationController, id)
+                    }
+                    composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
+                    composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
                 }
-                composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
-                composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
             }
         }
     }

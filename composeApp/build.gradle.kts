@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 kotlin {
@@ -47,6 +48,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.room.runtime)
             implementation(libs.sqlite)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.cio)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
             implementation("com.composables:icons-lucide:1.0.0")
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
             implementation("androidx.datastore:datastore:1.1.7")

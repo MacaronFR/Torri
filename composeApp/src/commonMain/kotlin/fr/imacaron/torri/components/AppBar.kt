@@ -12,20 +12,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.navigation.NavController
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.BookText
+import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Send
 import fr.imacaron.torri.Destination
-import fr.imacaron.torri.viewmodel.CommandViewModel
+import fr.imacaron.torri.activated
+import fr.imacaron.torri.clientKey
 import fr.imacaron.torri.viewmodel.ServiceViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, commandViewModel: CommandViewModel) {
+fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dataStore: DataStore<Preferences>, reload: () -> Unit = {}) {
+	val scope = rememberCoroutineScope()
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { controller, destination, arguments ->
 		destination.route?.let { currentRoute = it }
@@ -34,6 +41,20 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, com
 		{ Text("Torri") },
 		actions = {
 			when(currentRoute) {
+				Destination.SERVICE.route -> {
+					IconButton({
+						scope.launch {
+							dataStore.updateData {
+								it.toMutablePreferences().apply {
+									remove(activated)
+									remove(clientKey)
+								}
+							}
+						}
+					}) {
+						Icon(Lucide.LogOut, "Se déconnecter", tint = MaterialTheme.colorScheme.primary)
+					}
+				}
 				Destination.SERVICE_COMMAND.route -> {
 					var doneDialog by remember { mutableStateOf(false) }
 					IconButton({ navController.navigate(Destination.SERVICE_COMMAND_DETAIL.route) }) {
