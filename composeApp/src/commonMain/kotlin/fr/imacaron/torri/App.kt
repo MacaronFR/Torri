@@ -52,15 +52,15 @@ val data = listOf(
 )
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
-    ITEMS("items", "Produits", Lucide.Inbox),
-    ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
-    PRICE_LIST("pricelist", "Tarifs", Lucide.DollarSign),
-    PRICE_LIST_ADD("pricelist/add", "Ajouter un tarif", Lucide.DollarSign),
-    PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier un tarif", Lucide.DollarSign),
     SERVICE("service", "Service", Lucide.BookOpen),
     SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
     SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
-    SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command);
+    SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
+    PRICE_LIST("pricelist", "Tarifs", Lucide.DollarSign),
+    PRICE_LIST_ADD("pricelist/add", "Ajouter un tarif", Lucide.DollarSign),
+    PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier un tarif", Lucide.DollarSign),
+    ITEMS("items", "Produits", Lucide.Inbox),
+    ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox);
 
     fun routeWithArg(vararg args: Pair<String, String>): String {
         var route = this.route
