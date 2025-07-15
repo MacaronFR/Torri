@@ -55,7 +55,7 @@ class Converters {
 	@OptIn(ExperimentalTime::class)
 	@TypeConverter
 	fun fromTimestamp(value: Long?): LocalDate? {
-		return value?.let { Instant.fromEpochSeconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date }
+		return value?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date }
 	}
 
 	@OptIn(ExperimentalTime::class)

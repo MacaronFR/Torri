@@ -9,9 +9,7 @@ import androidx.lifecycle.viewModelScope
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.ServiceEntity
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -52,6 +50,13 @@ class ServiceViewModel(private val db: AppDataBase): ViewModel() {
 			val newService = service.copy(pending = false)
 			db.serviceDao().update(newService)
 			loadServices()
+		}
+	}
+
+	fun delete(service: ServiceEntity) {
+		viewModelScope.launch {
+			db.serviceDao().delete(service)
+			services.remove(service)
 		}
 	}
 }
