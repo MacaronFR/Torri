@@ -24,7 +24,8 @@ fun LoadingScreen(text: String = "Chargement...") {
 		Text(
 			text = text,
 			modifier = Modifier.padding(top = 16.dp),
-			style = MaterialTheme.typography.bodyLarge
+			style = MaterialTheme.typography.bodyLarge,
+			color = MaterialTheme.colorScheme.onBackground,
 		)
 	}
 }

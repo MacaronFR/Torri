@@ -34,6 +34,9 @@ class LicenceRegistration {
 	}
 
 	suspend fun register(clientId: String, licence: String): Result<Unit> {
+		if(!isNetworkAvailable()) {
+			return Result.failure(Exception("No network"))
+		}
 		return withContext(Dispatchers.IO) {
 			val response = client.post("https://licence.imacaron.fr/torri/$clientId/licence") {
 				contentType(ContentType.Application.Json)
@@ -60,6 +63,9 @@ class LicenceRegistration {
 	}
 
 	suspend fun validate(clientId: String): Result<Unit> {
+		if(!isNetworkAvailable()) {
+			return Result.success(Unit)
+		}
 		return withContext(Dispatchers.IO) {
 			val response = client.get("https://licence.imacaron.fr/torri/$clientId/devices/$deviceId")
 			println(response.bodyAsText())

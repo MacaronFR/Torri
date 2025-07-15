@@ -81,16 +81,11 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     LaunchedEffect(dataStore) {
         dataStore.data.collect {
             if(it[activated] != true) {
-                println("GO TO LOGIN")
                 loggedIn = false
             } else {
-                println("CHECK")
-                println("CLIENT ID: ${it[clientKey]}")
                 licenceRegistration.validate(it[clientKey] ?: "").onSuccess {
-                    println("GO TO MAIN")
                     loggedIn = true
                 }.onFailure {
-                    println("GO TO LOGIN")
                     loggedIn = false
                     dataStore.updateData { pref ->
                         pref.toMutablePreferences().apply {

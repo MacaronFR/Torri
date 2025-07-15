@@ -35,9 +35,13 @@ fun LoginScreen(dataStore: DataStore<Preferences>, licenceRegistration: LicenceR
 		horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 	) {
-		Text(error)
-		OutlinedTextField(clientId, { clientId = it }, Modifier.padding(bottom = 8.dp), label = { Text("Identifiant Client") })
-		OutlinedTextField(licence, { licence = it }, Modifier.padding(bottom = 8.dp), label = { Text("N° Licence") })
+		if(error == "network") {
+			Text("Erreur: Aucune connexion au réseau", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
+		} else if(error == "unknown") {
+			Text("Erreur inconnue", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.error)
+		}
+		OutlinedTextField(clientId, { clientId = it }, Modifier.padding(bottom = 8.dp), label = { Text("Identifiant Client") }, isError = error == "client", supportingText = { if(error == "client") Text("Erreur sur l'identifiant Client") } )
+		OutlinedTextField(licence, { licence = it }, Modifier.padding(bottom = 8.dp), label = { Text("N° Licence") }, isError = error == "licence", supportingText = { if(error == "licence") Text("Erreur sur le N° de Licence") })
 		Button({
 			scope.launch {
 				licenceRegistration.register(clientId, licence).onSuccess {
@@ -48,11 +52,14 @@ fun LoginScreen(dataStore: DataStore<Preferences>, licenceRegistration: LicenceR
 						}
 					}
 				}.onFailure {
+					println(it)
 					it.message?.let { message ->
 						if ("client" in message) {
 							error = "client"
 						} else if ("licence" in message) {
 							error = "licence"
+						} else if("network" in message){
+							error = "network"
 						} else {
 							error = "unknown"
 						}
