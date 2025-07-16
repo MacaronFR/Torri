@@ -38,27 +38,31 @@ class LicenceRegistration(client: HttpClient? = null) {
 			return Result.failure(Exception("No network"))
 		}
 		return withContext(Dispatchers.IO) {
-			val response = client.post("https://licence.imacaron.fr/torri/$clientId/licence") {
-				contentType(ContentType.Application.Json)
-				setBody(Auth(
-					licence,
-					deviceId,
-					model,
-					brand,
-					version,
-					platform
-				))
+			try {
+				val response = client.post("https://licence.imacaron.fr/torri/$clientId/licence") {
+					contentType(ContentType.Application.Json)
+					setBody(Auth(
+						licence,
+						deviceId,
+						model,
+						brand,
+						version,
+						platform
+					))
+				}
+				if(response.status.value == 404) {
+					return@withContext Result.failure(Exception("ID client error"))
+				}
+				if(response.status.value == 403 && response.bodyAsText() == "Licence number mismatch") {
+					return@withContext Result.failure(Exception("licence number error"))
+				}
+				if(response.status.value != 200) {
+					return@withContext Result.failure(Exception("Unknown error"))
+				}
+				Result.success(Unit)
+			} catch(_: Exception) {
+				Result.failure(Exception("Error on network"))
 			}
-			if(response.status.value == 404) {
-				return@withContext Result.failure(Exception("ID client error"))
-			}
-			if(response.status.value == 403 && response.bodyAsText() == "Licence number mismatch") {
-				return@withContext Result.failure(Exception("licence number error"))
-			}
-			if(response.status.value != 200) {
-				return@withContext Result.failure(Exception("Unknown error"))
-			}
-			Result.success(Unit)
 		}
 	}
 

@@ -55,7 +55,7 @@ val clientKey = stringPreferencesKey("clientID")
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     SERVICE("service", "Service", Lucide.BookOpen),
-    SERVICE_DETAIL("service/{id}", "Détail du service", Lucide.BookOpen),
+    SERVICE_DETAIL("service/detail/{id}", "Détail du service", Lucide.BookOpen),
     SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
     SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
     SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
