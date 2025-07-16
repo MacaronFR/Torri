@@ -47,6 +47,7 @@ import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
+import io.ktor.client.HttpClient
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 val activated = booleanPreferencesKey("activated")
@@ -74,9 +75,9 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass) {
+fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient? = null) {
     var loggedIn by remember { mutableStateOf<Boolean?>(null) }
-    val licenceRegistration = LicenceRegistration()
+    val licenceRegistration = LicenceRegistration(client)
     LaunchedEffect(dataStore) {
         dataStore.data.collect {
             if(it[activated] != true) {

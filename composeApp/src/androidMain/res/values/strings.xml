@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Torri</string>
+    <string name="storepwd">torry_key</string>
 </resources>

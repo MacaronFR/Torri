@@ -50,7 +50,6 @@ fun CommandList(commands: List<CommandEntity>, commandViewModel: CommandViewMode
 				LaunchedEffect(expand, commandViewModel, command) {
 					if(expand) {
 						detail.addAll(commandViewModel.loadCommandDetail(command))
-						println(detail)
 					}
 				}
 				Card(Modifier.padding(8.dp).animateContentSize().fillMaxWidth().heightIn(16.dp).clickable { expand = !expand }) {

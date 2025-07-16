@@ -9,8 +9,57 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import fr.imacaron.torri.data.getRoomDataBase
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.network.tls.TLSConfigBuilder
+import io.ktor.serialization.kotlinx.json.json
+import java.security.KeyStore
+import java.security.cert.X509Certificate
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
+
+@SuppressLint("CustomX509TrustManager")
+class CustomTrustManager(config: TLSConfigBuilder): X509TrustManager {
+    private val delegate = config.build().trustManager
+
+    private val defaultTrustManager: X509TrustManager
+
+    init {
+        val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())!!
+        factory.init(null as KeyStore?)
+        val manager = factory.trustManagers!!
+
+        defaultTrustManager = manager.filterIsInstance<X509TrustManager>().first()
+    }
+
+    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+        defaultTrustManager.checkClientTrusted(chain, authType)
+    }
+
+    override fun checkServerTrusted(chain: Array<out X509Certificate?>?, authType: String?) {
+        if(chain?.first()?.subjectDN?.name == "CN=licence.imacaron.fr") {
+            return
+        } else {
+            defaultTrustManager.checkServerTrusted(chain, authType)
+        }
+    }
+
+    override fun getAcceptedIssuers(): Array<out X509Certificate?>? = delegate.acceptedIssuers
+}
 
 class MainActivity : ComponentActivity() {
+    val client = HttpClient(CIO) {
+        engine {
+            https {
+                trustManager = CustomTrustManager(this)
+            }
+        }
+        install(ContentNegotiation) {
+            json()
+        }
+    }
+
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         activity = this
@@ -21,7 +70,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         fun createDataStore() = createDataStore { applicationContext.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath }
         setContent {
-            App(getRoomDataBase(getDatabaseBuilder(this)), createDataStore())
+            App(getRoomDataBase(getDatabaseBuilder(this)), createDataStore(), client = client)
         }
     }
 

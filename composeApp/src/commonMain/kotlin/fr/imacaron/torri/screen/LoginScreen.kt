@@ -52,7 +52,6 @@ fun LoginScreen(dataStore: DataStore<Preferences>, licenceRegistration: LicenceR
 						}
 					}
 				}.onFailure {
-					println(it)
 					it.message?.let { message ->
 						if ("client" in message) {
 							error = "client"

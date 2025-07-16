@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import io.ktor.serialization.kotlinx.json.json
 
-class LicenceRegistration {
+class LicenceRegistration(client: HttpClient? = null) {
 
 	@Serializable
 	private data class Auth(
@@ -27,7 +27,7 @@ class LicenceRegistration {
 		val platform: String
 	)
 
-	private val client = HttpClient(CIO) {
+	private val client = client ?: HttpClient(CIO) {
 		install(ContentNegotiation) {
 			json()
 		}
@@ -68,8 +68,6 @@ class LicenceRegistration {
 		}
 		return withContext(Dispatchers.IO) {
 			val response = client.get("https://licence.imacaron.fr/torri/$clientId/devices/$deviceId")
-			println(response.bodyAsText())
-			println(response.status)
 			if(response.status.value != 200) {
 				return@withContext Result.failure(Exception("Unknown error"))
 			} else {

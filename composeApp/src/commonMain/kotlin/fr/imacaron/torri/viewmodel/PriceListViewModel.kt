@@ -24,9 +24,8 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 		}
 		viewModelScope.launch {
 			val priceListId = db.priceListDao().insert(PriceListEntity(name = name, currency = currency))
-			println("insert: $priceListId")
-			items.apply { this.forEach { it.idPriceList = priceListId } }.apply { println("copy: $this") }.forEach {
-				println(db.priceListItemDao().insert(it))
+			items.apply { this.forEach { it.idPriceList = priceListId } }.forEach {
+				db.priceListItemDao().insert(it)
 			}
 			priceLists.clear()
 			priceLists.addAll(db.priceListDao().getAll())
