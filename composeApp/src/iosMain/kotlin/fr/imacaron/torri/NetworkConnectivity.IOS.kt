@@ -21,9 +21,9 @@ actual fun isNetworkAvailable(): Boolean {
     }
 }
 
-private val networkStatusFlow = test()
+private val networkStatusFlow = watchNetworkStatus()
 
-private fun test(): Flow<Boolean> {
+private fun watchNetworkStatus(): Flow<Boolean> {
     return callbackFlow {
         val monitor = nw_path_monitor_create()
         val queue = dispatch_queue_create(
