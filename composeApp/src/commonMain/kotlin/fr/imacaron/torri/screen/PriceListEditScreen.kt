@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
@@ -92,7 +98,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 					Icon(Lucide.Plus, contentDescription = "Ajouter un produit")
 				}
 			}
-			Column(Modifier.padding(16.dp).fillMaxWidth()) {
+			Column(Modifier.padding(16.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
 				items.forEach { item ->
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
 					Row {
@@ -110,11 +116,21 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 	if(addItemDialog) {
 		var price by remember { mutableStateOf("") }
 		var selectedItem by remember { mutableStateOf<ItemEntity?>(null) }
+		val onDone = {
+			if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
+				if(priceList != null) {
+					items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = priceList.priceList.idPriceList, price = price.toDouble()))
+					price = ""
+					addItemDialog = false
+					selectedItem = null
+				}
+			}
+		}
 		Dialog(
 			{ addItemDialog = false }
 		) {
 			Card(Modifier.fillMaxWidth()) {
-				OutlinedTextField(price, { price = it }, label = { Text("Prix en $currency") }, modifier = Modifier.padding(16.dp).fillMaxWidth())
+				OutlinedTextField(price, { price = it }, label = { Text("Prix en $currency") }, modifier = Modifier.padding(16.dp).fillMaxWidth(), keyboardActions = KeyboardActions(onDone = { onDone() }), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, autoCorrectEnabled = false, imeAction = ImeAction.Done))
 				LazyColumn {
 					items(savedItems.items) { item ->
 						Row(
@@ -134,17 +150,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 					}
 				}
 				Row(Modifier.padding(16.dp, 8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-					TextButton({
-						if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
-							if(priceList == null) {
-								return@TextButton
-							}
-							items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = priceList.priceList.idPriceList, price = price.toDouble()))
-							price = ""
-							addItemDialog = false
-							selectedItem = null
-						}
-					}) {
+					TextButton(onDone) {
 						Text("Ajouter")
 					}
 				}

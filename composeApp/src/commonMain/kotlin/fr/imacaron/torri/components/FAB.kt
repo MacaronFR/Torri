@@ -40,39 +40,11 @@ fun FAB(navController: NavController, commandViewModel: CommandViewModel) {
 	}
 	if(currentRoute == Destination.SERVICE_COMMAND.route) {
 		var payementDialog by remember { mutableStateOf(false) }
-		var payementMethod by remember { mutableStateOf("") }
 		FloatingActionButton(onClick = { payementDialog = true }) {
 			Icon(Lucide.CheckCheck, contentDescription = "Terminer la commande")
 		}
 		if(payementDialog) {
-			Dialog({ payementDialog = false }) {
-				Card {
-					Text("Méthode de paiement", Modifier.padding(16.dp), style = MaterialTheme.typography.headlineSmall)
-					Column {
-						Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { payementMethod = "ESP" }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-							RadioButton(payementMethod == "ESP", { payementMethod = "ESP" })
-							Icon(Lucide.Banknote, contentDescription = "Paiement espèce")
-							Text("Espèce")
-						}
-						Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { payementMethod = "CB" }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-							RadioButton(payementMethod == "CB", { payementMethod = "CB" })
-							Icon(Lucide.CreditCard, contentDescription = "Paiement carte bancaire")
-							Text("Carte Bancaire")
-						}
-					}
-					Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-						TextButton({
-							if(payementMethod.isNotEmpty()) {
-								commandViewModel.pay(payementMethod)
-								payementDialog = false
-								payementMethod = ""
-							}
-						}) {
-							Text("Valider")
-						}
-					}
-				}
-			}
+			PayementDialog({ payementDialog = false }, commandViewModel)
 		}
 	}
 }

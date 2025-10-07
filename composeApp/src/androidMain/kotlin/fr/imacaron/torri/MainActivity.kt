@@ -8,6 +8,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import fr.imacaron.torri.data.getRoomDataBase
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
@@ -48,6 +50,10 @@ class CustomTrustManager(config: TLSConfigBuilder): X509TrustManager {
     override fun getAcceptedIssuers(): Array<out X509Certificate?>? = delegate.acceptedIssuers
 }
 
+object DataStoreHolder {
+    var dataStore: DataStore<Preferences>? = null
+}
+
 class MainActivity : ComponentActivity() {
     val client = HttpClient(CIO) {
         engine {
@@ -68,9 +74,12 @@ class MainActivity : ComponentActivity() {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         super.onCreate(savedInstanceState)
-        fun createDataStore() = createDataStore { applicationContext.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath }
+        val dataStore = DataStoreHolder.dataStore ?: run {
+            DataStoreHolder.dataStore = createDataStore { applicationContext.filesDir.resolve(DATA_STORE_FILE_NAME).absolutePath }
+            DataStoreHolder.dataStore!!
+        }
         setContent {
-            App(getRoomDataBase(getDatabaseBuilder(this)), createDataStore(), client = client)
+            App(getRoomDataBase(getDatabaseBuilder(this)), dataStore, client = client)
         }
     }
 

@@ -1,5 +1,6 @@
 package fr.imacaron.torri
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -125,34 +126,35 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                 bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
                 floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel) } },
             ) {
-                if (displaySidePanel) {
-                    SideBar(it)
-                }
-                NavHost(
-                    navigationController,
-                    startDestination = Destination.SERVICE.route,
-                    Modifier.padding(it)
-                ) {
-                    composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
-                    composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
-                        val id = backStackEntry.arguments?.read {
-                            this.getStringOrNull("id")?.toLongOrNull()
-                        } ?: 0L
-                        ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
+                Row(Modifier.padding(it)) {
+                    if (displaySidePanel) {
+                        SideBar(navigationController)
                     }
-                    composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
-                    composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel) }
-                    composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
-                    composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
-                    composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems, navigationController) }
-                    composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
-                        val id = backStackEntry.arguments?.read {
-                            this.getStringOrNull("id")?.toLongOrNull()
-                        } ?: 0L
-                        PriceListEditScreen(priceList, savedItems, navigationController, id)
+                    NavHost(
+                        navigationController,
+                        startDestination = Destination.SERVICE.route
+                    ) {
+                        composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
+                        composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
+                            val id = backStackEntry.arguments?.read {
+                                this.getStringOrNull("id")?.toLongOrNull()
+                            } ?: 0L
+                            ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
+                        }
+                        composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
+                        composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel, portrait) }
+                        composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
+                        composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
+                        composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems, navigationController) }
+                        composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
+                            val id = backStackEntry.arguments?.read {
+                                this.getStringOrNull("id")?.toLongOrNull()
+                            } ?: 0L
+                            PriceListEditScreen(priceList, savedItems, navigationController, id)
+                        }
+                        composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
+                        composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
                     }
-                    composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
-                    composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
                 }
             }
         }
