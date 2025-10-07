@@ -59,7 +59,6 @@ fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: Servic
 		prices.addAll(priceListViewModel.getPriceListItems(priceList.priceList))
 	}
 	if(displaySidePanel) {
-		println(portrait)
 		if(portrait) {
 			Column(Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(2f))
