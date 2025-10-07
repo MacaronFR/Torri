@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 
 @Dao
 interface CommandPriceListItemDao {
@@ -16,6 +17,7 @@ interface CommandPriceListItemDao {
 	@Insert
 	suspend fun insertAll(commandPriceListItems: List<CommandPriceListItemEntity>): List<Long>
 
+	@Transaction
 	@Query("SELECT * FROM CommandPriceListItemEntity WHERE idCommand = :idCommand")
 	suspend fun getByCommand(idCommand: Long): List<CommandPriceListItemsWithPriceListItem>
 }

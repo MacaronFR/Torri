@@ -8,6 +8,7 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.datetime.LocalDate
 
@@ -28,9 +29,11 @@ interface ServiceDao {
 	@Query("SELECT * FROM ServiceEntity WHERE idService = :id")
 	suspend fun getById(id: Long): ServiceEntity?
 
+	@Transaction
 	@Query("SELECT * FROM ServiceEntity WHERE idService = :id")
 	suspend fun getByIdWithPriceList(id: Long): ServiceWithPriceList?
 
+	@Transaction
 	@Query("SELECT * FROM ServiceEntity WHERE idService = :id")
 	suspend fun getByIdWithCommands(id: Long): ServiceWithCommands?
 
