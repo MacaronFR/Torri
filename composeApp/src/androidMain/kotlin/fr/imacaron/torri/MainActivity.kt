@@ -12,8 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.sumup.merchant.reader.api.SumUpAPI
-import com.sumup.merchant.reader.api.SumUpLogin
-import com.sumup.merchant.reader.api.SumUpState
 import com.sumup.merchant.reader.models.TransactionInfo
 import fr.imacaron.torri.data.getRoomDataBase
 import io.ktor.client.HttpClient

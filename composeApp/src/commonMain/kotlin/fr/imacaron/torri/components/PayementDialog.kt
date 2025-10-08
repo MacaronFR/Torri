@@ -27,16 +27,11 @@ import androidx.compose.ui.window.Dialog
 import com.composables.icons.lucide.Banknote
 import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Lucide
-import fr.imacaron.torri.CardTransactionInfo
 import fr.imacaron.torri.SumUp
-import fr.imacaron.torri.data.PriceListEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.CommandViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun PayementDialog(onDismiss: () -> Unit, commandViewModel: CommandViewModel, items: PriceListWithItem, prices: List<PriceListItemEntity>) {
@@ -78,7 +73,7 @@ fun PayementDialog(onDismiss: () -> Unit, commandViewModel: CommandViewModel, it
 									onDismiss()
 									payementMethod = ""
 								} else {
-									println("ERROR")
+									// TODO: Gestion erreur
 								}
 							}
 						} else {
