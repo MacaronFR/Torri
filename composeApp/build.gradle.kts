@@ -35,6 +35,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation("com.sumup:merchant-sdk:5.0.3")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -50,7 +51,6 @@ kotlin {
             implementation(libs.sqlite)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.cio)
-            implementation(libs.ktor.client.darwin)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation("com.composables:icons-lucide:1.0.0")
@@ -60,6 +60,9 @@ kotlin {
             implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.2")
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta03")
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
     }
 }

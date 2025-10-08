@@ -58,6 +58,7 @@ fun CommandList(commands: List<CommandEntity>, commandViewModel: CommandViewMode
 						val icon = when(command.payementMethod) {
 							"ESP" -> Lucide.Banknote
 							"CB" -> Lucide.CreditCard
+							"SUMUP" -> Lucide.CreditCard
 							else -> Lucide.ShieldQuestion
 						}
 						Icon(icon, "Méthode de paiement", Modifier.size(24.dp))

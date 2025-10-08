@@ -62,24 +62,24 @@ fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: Servic
 		if(portrait) {
 			Column(Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(2f))
-				CommandDetail(commandViewModel, items, priceList, portrait, displaySidePanel, Modifier.weight(1f))
+				CommandDetail(commandViewModel, items, priceList, prices, portrait, displaySidePanel, Modifier.weight(1f))
 			}
 		} else {
 			Row(Modifier.padding(4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(1f))
-				CommandDetail(commandViewModel, items, priceList, portrait, displaySidePanel, Modifier.weight(1f))
+				CommandDetail(commandViewModel, items, priceList, prices, portrait, displaySidePanel, Modifier.weight(1f))
 			}
 		}
 	} else {
 		Column(Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-			CommandDetail(commandViewModel, items, priceList, portrait, displaySidePanel)
+			CommandDetail(commandViewModel, items, priceList, prices, portrait, displaySidePanel)
 			ItemSelection(cols, items, prices, priceList, commandViewModel)
 		}
 	}
 }
 
 @Composable
-fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, priceList: PriceListWithItem, portrait: Boolean, displaySidePanel: Boolean, modifier: Modifier = Modifier) {
+fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, priceList: PriceListWithItem, prices: List<PriceListItemEntity>, portrait: Boolean, displaySidePanel: Boolean, modifier: Modifier = Modifier) {
 	var expand by remember { mutableStateOf(false) }
 	Card(modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand }.animateContentSize().heightIn(32.dp).run { if(!portrait) this.fillMaxHeight() else this }) {
 		Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
@@ -115,7 +115,7 @@ fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, p
 				}
 			}
 			if(payementDialog) {
-				PayementDialog({ payementDialog = false }, commandViewModel)
+				PayementDialog({ payementDialog = false }, commandViewModel, priceList, prices)
 			}
 		}
 	}

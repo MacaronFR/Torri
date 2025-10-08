@@ -2,8 +2,10 @@ package fr.imacaron.torri
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -22,6 +24,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.composables.icons.lucide.BookOpen
+import com.composables.icons.lucide.Cog
 import com.composables.icons.lucide.Command
 import com.composables.icons.lucide.DollarSign
 import com.composables.icons.lucide.Inbox
@@ -31,8 +34,10 @@ import fr.imacaron.torri.components.BottomBar
 import fr.imacaron.torri.components.FAB
 import fr.imacaron.torri.components.SideBar
 import fr.imacaron.torri.data.AppDataBase
+import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.screen.CommandDetailScreen
 import fr.imacaron.torri.screen.CommandScreen
+import fr.imacaron.torri.screen.ConfScreen
 import fr.imacaron.torri.screen.ItemAddScreen
 import fr.imacaron.torri.screen.ItemScreen
 import fr.imacaron.torri.screen.LoadingScreen
@@ -64,7 +69,8 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
     PRICE_LIST_ADD("pricelist/add", "Ajouter un tarif", Lucide.DollarSign),
     PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier un tarif", Lucide.DollarSign),
     ITEMS("items", "Produits", Lucide.Inbox),
-    ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox);
+    ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
+    CONF("conf", "Configuration", Lucide.Cog);
 
     fun routeWithArg(vararg args: Pair<String, String>): String {
         var route = this.route
@@ -77,6 +83,7 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 @Composable
 @Preview
 fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient? = null) {
+    SumUp.init()
     var loggedIn by remember { mutableStateOf<Boolean?>(null) }
     val licenceRegistration = LicenceRegistration(client)
     LaunchedEffect(dataStore) {
@@ -121,10 +128,15 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
         } else if(loggedIn == null) {
             LoadingScreen()
         } else {
+            val items = priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }!!
+            var prices:List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
+            LaunchedEffect(priceList, items) {
+                prices = priceList.getPriceListItems(items.priceList)
+            }
             Scaffold(
                 topBar = { AppBar(navigationController, serviceViewModel, dataStore) },
                 bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
-                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel) } },
+                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }!!, prices) } },
             ) {
                 Row(Modifier.padding(it)) {
                     if (displaySidePanel) {
@@ -154,6 +166,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
+                        composable(Destination.CONF.route) { ConfScreen() }
                     }
                 }
             }

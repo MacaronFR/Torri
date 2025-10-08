@@ -11,10 +11,12 @@ import androidx.navigation.NavController
 import com.composables.icons.lucide.CheckCheck
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Destination
+import fr.imacaron.torri.data.PriceListItemEntity
+import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.CommandViewModel
 
 @Composable
-fun FAB(navController: NavController, commandViewModel: CommandViewModel) {
+fun FAB(navController: NavController, commandViewModel: CommandViewModel, items: PriceListWithItem, prices: List<PriceListItemEntity>) {
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { controller, destination, arguments ->
 		destination.route?.let { currentRoute = it }
@@ -25,7 +27,7 @@ fun FAB(navController: NavController, commandViewModel: CommandViewModel) {
 			Icon(Lucide.CheckCheck, contentDescription = "Terminer la commande")
 		}
 		if(payementDialog) {
-			PayementDialog({ payementDialog = false }, commandViewModel)
+			PayementDialog({ payementDialog = false }, commandViewModel, items, prices)
 		}
 	}
 }

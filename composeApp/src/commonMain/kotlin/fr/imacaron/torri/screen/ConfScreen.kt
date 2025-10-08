@@ -1,0 +1,64 @@
+package fr.imacaron.torri.screen
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.composables.icons.lucide.LogIn
+import com.composables.icons.lucide.LogOut
+import com.composables.icons.lucide.Lucide
+import fr.imacaron.torri.SumUp
+
+@Composable
+fun ConfScreen() {
+	var reload by remember { mutableStateOf(false) }
+	val lifeycleOwner = LocalLifecycleOwner.current
+	val lifecycleState by lifeycleOwner.lifecycle.currentStateFlow.collectAsState()
+	LaunchedEffect(lifecycleState) {
+		when(lifecycleState) {
+			Lifecycle.State.RESUMED -> {
+				SumUp.isLogged
+			}
+			else -> {}
+		}
+	}
+	Column(Modifier.padding(8.dp)) {
+		Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+			Text(if(SumUp.isLogged) "SumUp ✔" else "SumUp")
+			if(SumUp.isLogged) {
+				Button({ SumUp.logout(); reload = !reload }) {
+					Text("Se déconnecter de SumUp")
+					Icon(Lucide.LogOut, "Se déconnecter de SumUp")
+				}
+			} else {
+				Button({ SumUp.login() }) {
+					Text("Se connecter à SumUp")
+					Icon(Lucide.LogIn, "Se connecter à SumUp")
+				}
+			}
+		}
+		if(SumUp.isLogged) {
+			Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+				Button({ SumUp.cardReaderPage() }) {
+					Text("Configuration du terminal")
+				}
+			}
+		}
+	}
+}

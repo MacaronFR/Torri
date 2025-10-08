@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,11 +27,21 @@ import androidx.compose.ui.window.Dialog
 import com.composables.icons.lucide.Banknote
 import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Lucide
+import fr.imacaron.torri.CardTransactionInfo
+import fr.imacaron.torri.SumUp
+import fr.imacaron.torri.data.PriceListEntity
+import fr.imacaron.torri.data.PriceListItemEntity
+import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.CommandViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
-fun PayementDialog(onDismiss: () -> Unit, commandViewModel: CommandViewModel) {
+fun PayementDialog(onDismiss: () -> Unit, commandViewModel: CommandViewModel, items: PriceListWithItem, prices: List<PriceListItemEntity>) {
 	var payementMethod by remember { mutableStateOf("") }
+	val coroutineScope = rememberCoroutineScope()
 	Dialog(onDismiss ) {
 		Card {
 			Text("Méthode de paiement", Modifier.padding(16.dp), style = MaterialTheme.typography.headlineSmall)
@@ -40,18 +51,41 @@ fun PayementDialog(onDismiss: () -> Unit, commandViewModel: CommandViewModel) {
 					Icon(Lucide.Banknote, contentDescription = "Paiement espèce")
 					Text("Espèce")
 				}
-				Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { payementMethod = "CB" }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-					RadioButton(payementMethod == "CB", { payementMethod = "CB" })
-					Icon(Lucide.CreditCard, contentDescription = "Paiement carte bancaire")
-					Text("Carte Bancaire")
+				if(!SumUp.isLogged) {
+					Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { payementMethod = "CB" }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+						RadioButton(payementMethod == "CB", { payementMethod = "CB" })
+						Icon(Lucide.CreditCard, contentDescription = "Paiement carte bancaire")
+						Text("Carte Bancaire")
+					}
+				}
+				if(SumUp.isLogged) {
+					Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { payementMethod = "SUMUP" }, horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+						RadioButton(payementMethod == "SUMUP", { payementMethod = "SUMUP" })
+						Icon(Lucide.CreditCard, contentDescription = "Paiement SumUp")
+						Text("SumUp")
+					}
 				}
 			}
 			Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
 				TextButton({
 					if(payementMethod.isNotEmpty()) {
-						commandViewModel.pay(payementMethod)
-						onDismiss()
-						payementMethod = ""
+						if(payementMethod == "SUMUP" && SumUp.isLogged) {
+							SumUp.pay(commandViewModel.totalPrice, commandViewModel.command.toMap(), items, prices)
+							coroutineScope.launch {
+								val info = SumUp.transactionInfo.receive()
+								if(info.status != "FAILED") {
+									commandViewModel.pay(payementMethod)
+									onDismiss()
+									payementMethod = ""
+								} else {
+									println("ERROR")
+								}
+							}
+						} else {
+							commandViewModel.pay(payementMethod)
+							onDismiss()
+							payementMethod = ""
+						}
 					}
 				}) {
 					Text("Valider")
