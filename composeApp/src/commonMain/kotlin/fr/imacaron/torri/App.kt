@@ -126,15 +126,20 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
         } else if(loggedIn == null) {
             LoadingScreen()
         } else {
-            val items = priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }!!
-            var prices:List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
+            var items: PriceListWithItem? by remember { mutableStateOf(null) }
+            var prices: List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
+            LaunchedEffect(serviceViewModel.currentService) {
+                items = priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }
+            }
             LaunchedEffect(priceList, items) {
-                prices = priceList.getPriceListItems(items.priceList)
+                items?.let {
+                    prices = priceList.getPriceListItems(it.priceList)
+                }
             }
             Scaffold(
                 topBar = { AppBar(navigationController, serviceViewModel, dataStore) },
                 bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
-                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }!!, prices) } },
+                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
             ) {
                 Row(Modifier.padding(it)) {
                     if (displaySidePanel) {
