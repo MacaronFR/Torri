@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.lifecycle.lifecycleScope
 import com.sumup.merchant.reader.api.SumUpAPI
 import com.sumup.merchant.reader.models.TransactionInfo
 import fr.imacaron.torri.data.getRoomDataBase
@@ -19,6 +20,10 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.tls.TLSConfigBuilder
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import java.security.KeyStore
 import java.security.cert.X509Certificate
 import javax.net.ssl.TrustManagerFactory
@@ -43,7 +48,9 @@ class CustomTrustManager(config: TLSConfigBuilder): X509TrustManager {
 	}
 
 	override fun checkServerTrusted(chain: Array<out X509Certificate?>?, authType: String?) {
-		if(chain?.first()?.subjectDN?.name == "CN=licence.imacaron.fr") {
+		if(chain?.first()?.subjectDN?.name == "CN=api.sumup.com") {
+			return
+		} else if(chain?.first()?.subjectDN?.name == "CN=licence.imacaron.fr") {
 			return
 		} else {
 			defaultTrustManager.checkServerTrusted(chain, authType)
@@ -72,6 +79,7 @@ class MainActivity : ComponentActivity() {
 	@SuppressLint("SourceLockedOrientationActivity")
 	override fun onCreate(savedInstanceState: Bundle?) {
 		activity = this
+		(SumUp.codeAuthFlowFactory as AndroidCodeAuthFlowFactory).registerActivity(this)
 		enableEdgeToEdge()
 		if(resources.getBoolean(R.bool.force_portrait)) {
 			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -82,6 +90,7 @@ class MainActivity : ComponentActivity() {
 			DataStoreHolder.dataStore!!
 		}
 		SumUp.activity = this
+		SumUp.httpClient = client
 		setContent {
 			App(getRoomDataBase(getDatabaseBuilder(this)), dataStore, client = client)
 		}
@@ -112,8 +121,16 @@ class MainActivity : ComponentActivity() {
 
 	lateinit var sumUpOnResult: (data: CardTransactionInfo) -> Unit
 
+	lateinit var sumupOnLogin: suspend (logged: Boolean) -> Unit
+
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
+		if(requestCode == 158 && data != null) {
+			val resultCode = data.extras?.getInt(SumUpAPI.Response.RESULT_CODE)
+			lifecycleScope.launch {
+				sumupOnLogin(resultCode != SumUpAPI.Response.ResultCode.ERROR_INVALID_TOKEN)
+			}
+		}
 		if(requestCode == 2 && data != null) {
 			val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 				data.extras?.getParcelable(SumUpAPI.Response.TX_INFO, TransactionInfo::class.java)

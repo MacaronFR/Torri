@@ -35,7 +35,7 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation("com.sumup:merchant-sdk:5.0.3")
+            implementation("com.sumup:merchant-sdk:4.2.0")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -60,6 +60,8 @@ kotlin {
             implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.2")
             implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta03")
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+            implementation(libs.oidc.appsupport)
+            implementation(libs.oidc.ktor)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -77,6 +79,10 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 3
         versionName = "1.1.1"
+        addManifestPlaceholders(
+//            mapOf("oidcRedirectScheme" to "https")
+            mapOf("oidcRedirectScheme" to "fr.imacaron.torri")
+        )
     }
     packaging {
         resources {

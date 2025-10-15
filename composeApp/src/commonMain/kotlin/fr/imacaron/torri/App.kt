@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -33,6 +34,7 @@ import fr.imacaron.torri.components.FAB
 import fr.imacaron.torri.components.SideBar
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.PriceListItemEntity
+import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.screen.CommandDetailScreen
 import fr.imacaron.torri.screen.CommandScreen
 import fr.imacaron.torri.screen.ConfScreen
@@ -56,6 +58,9 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 val activated = booleanPreferencesKey("activated")
 val clientKey = stringPreferencesKey("clientID")
+val sumupAccessToken = stringPreferencesKey("sumupAccessToken")
+val sumupRefreshToken = stringPreferencesKey("sumupRefreshToken")
+val sumupExpire = longPreferencesKey("sumupExpire")
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     SERVICE("service", "Service", Lucide.BookOpen),
@@ -68,7 +73,8 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
     PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier un tarif", Lucide.DollarSign),
     ITEMS("items", "Produits", Lucide.Inbox),
     ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
-    CONF("conf", "Configuration", Lucide.Cog);
+    CONF("conf", "Configuration", Lucide.Cog),
+    CONF_SUMUP_LOGIN("conf/sumup/login", "Connexion SumUp", Lucide.Cog);
 
     fun routeWithArg(vararg args: Pair<String, String>): String {
         var route = this.route
@@ -80,7 +86,34 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient? = null) {
+fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient) {
+    SumUp.onLogin = { isLogged ->
+        if(!isLogged) {
+            dataStore.data.collect {
+                if(it[sumupRefreshToken] != null) {
+                    val newTokens = SumUp.refreshToken(it[sumupRefreshToken]!!)
+                    dataStore.updateData { pref ->
+                        pref.toMutablePreferences().apply {
+                            if(newTokens == null) {
+                                remove(sumupAccessToken)
+                                remove(sumupRefreshToken)
+                                remove(sumupExpire)
+                                //TODO Inform error
+                            } else {
+                                set(sumupAccessToken, newTokens.access_token)
+                                newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
+                                newTokens.expires_in?.let { expiresIn -> set(sumupExpire, newTokens.received_at + expiresIn) }
+                            }
+                        }
+                    }
+                    newTokens?.let { SumUp.login(it.access_token) }
+                } else {
+                    // Notify disconnected from SumUp
+                    println("Disconnected from Sumup")
+                }
+            }
+        }
+    }
     SumUp.init()
     var loggedIn by remember { mutableStateOf<Boolean?>(null) }
     val licenceRegistration = LicenceRegistration(client)
@@ -98,6 +131,17 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             set(activated, false)
                             set(clientKey, "")
                         }
+                    }
+                }
+            }
+            if(it[sumupAccessToken] != null && !SumUp.isLogged) {
+                SumUp.login(it[sumupAccessToken]!!)
+            } else {
+                dataStore.updateData { pref ->
+                    pref.toMutablePreferences().apply {
+                        remove(sumupAccessToken)
+                        remove(sumupRefreshToken)
+                        remove(sumupExpire)
                     }
                 }
             }
@@ -169,7 +213,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
-                        composable(Destination.CONF.route) { ConfScreen() }
+                        composable(Destination.CONF.route) { ConfScreen(dataStore) }
                     }
                 }
             }

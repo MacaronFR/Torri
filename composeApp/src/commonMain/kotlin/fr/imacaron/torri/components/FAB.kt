@@ -16,7 +16,7 @@ import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.CommandViewModel
 
 @Composable
-fun FAB(navController: NavController, commandViewModel: CommandViewModel, items: PriceListWithItem, prices: List<PriceListItemEntity>) {
+fun FAB(navController: NavController, commandViewModel: CommandViewModel, items: PriceListWithItem?, prices: List<PriceListItemEntity>) {
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { controller, destination, arguments ->
 		destination.route?.let { currentRoute = it }
@@ -26,7 +26,7 @@ fun FAB(navController: NavController, commandViewModel: CommandViewModel, items:
 		FloatingActionButton(onClick = { payementDialog = true }) {
 			Icon(Lucide.CheckCheck, contentDescription = "Terminer la commande")
 		}
-		if(payementDialog) {
+		if(payementDialog && items != null) {
 			PayementDialog({ payementDialog = false }, commandViewModel, items, prices)
 		}
 	}

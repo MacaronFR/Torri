@@ -1,7 +1,7 @@
 [versions]
 agp = "8.10.1"
-android-compileSdk = "35"
-android-minSdk = "26"
+android-compileSdk = "36"
+android-minSdk = "24"
 android-targetSdk = "35"
 androidx-activity = "1.10.1"
 androidx-lifecycle = "2.9.1"
@@ -11,6 +11,7 @@ room = "2.7.2"
 sqlite = "2.5.2"
 ksp = "2.2.0-2.0.2"
 ktor = "3.2.2"
+oidc = "0.15.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -24,6 +25,9 @@ ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
+oidc-okhttp4 = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-okhttp4", version.ref = "oidc" }
+oidc-ktor = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-ktor", version.ref = "oidc" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
