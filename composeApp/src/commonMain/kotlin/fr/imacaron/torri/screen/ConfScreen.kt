@@ -23,31 +23,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
 import com.composables.icons.lucide.LogIn
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
-import fr.imacaron.torri.Destination
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.sumupAccessToken
 import fr.imacaron.torri.sumupExpire
 import fr.imacaron.torri.sumupRefreshToken
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.request.get
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
-import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
-import org.publicvalue.multiplatform.oidc.OpenIdConnectClientConfig
-import org.publicvalue.multiplatform.oidc.OpenIdConnectException
-import org.publicvalue.multiplatform.oidc.appsupport.CodeAuthFlowFactory
-import org.publicvalue.multiplatform.oidc.types.CodeChallengeMethod
-import org.publicvalue.multiplatform.oidc.types.remote.AccessTokenResponse
-import kotlin.time.Clock
 
 @Composable
 fun ConfScreen(dataStore: DataStore<Preferences>) {
