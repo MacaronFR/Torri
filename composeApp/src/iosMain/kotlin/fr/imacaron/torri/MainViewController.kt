@@ -35,4 +35,8 @@ val client = HttpClient(Darwin) {
 }
 
 @Suppress("unused", "FunctionName")
-fun MainViewController() = ComposeUIViewController { App(getRoomDataBase(getDatabaseBuilder()), dataStore, client = client) }
+fun MainViewController() = ComposeUIViewController {
+    App(getRoomDataBase(getDatabaseBuilder()), dataStore, client = client)
+}.apply {
+    SumUp.viewController = this
+}

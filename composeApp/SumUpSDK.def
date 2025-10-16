@@ -1,0 +1,3 @@
+language = Objective-C
+modules = SumUpSDK
+package = fr.imacaron.torri.ios

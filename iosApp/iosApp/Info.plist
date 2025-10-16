@@ -6,5 +6,11 @@
 	<true/>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SumUp requirement</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>SumUp requirement for connection to terminal</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>SumUp requirement</string>
 </dict>
 </plist>

@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -164,6 +166,8 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
         it.width < it.height
     }
     val navigationController = rememberNavController()
+    val snackBarState = remember { SnackbarHostState() }
+    SumUp.snackBarState = snackBarState
     AppTheme {
         if(loggedIn == false) {
             LoginScreen(dataStore, licenceRegistration)
@@ -184,6 +188,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                 topBar = { AppBar(navigationController, serviceViewModel, dataStore) },
                 bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
                 floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
+                snackbarHost = { SnackbarHost(snackBarState) }
             ) {
                 Row(Modifier.padding(it)) {
                     if (displaySidePanel) {

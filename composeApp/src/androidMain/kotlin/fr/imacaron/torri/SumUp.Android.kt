@@ -1,5 +1,6 @@
 package fr.imacaron.torri
 
+import androidx.compose.material3.SnackbarHostState
 import com.sumup.merchant.reader.api.SumUpAPI
 import com.sumup.merchant.reader.api.SumUpLogin
 import com.sumup.merchant.reader.api.SumUpPayment
@@ -10,6 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import kotlinx.coroutines.channels.Channel
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
+import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClientConfig
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.appsupport.CodeAuthFlowFactory
@@ -21,6 +23,8 @@ actual object SumUp {
 	lateinit var activity: MainActivity
 
 	var httpClient: HttpClient = HttpClient(CIO)
+
+	actual var snackBarState: SnackbarHostState? = null
 
 	actual fun init() {
 		SumUpState.init(activity)
@@ -70,7 +74,7 @@ actual object SumUp {
 
 	actual val codeAuthFlowFactory: CodeAuthFlowFactory = AndroidCodeAuthFlowFactory(useWebView = false)
 
-	actual val openIDClient: DefaultOpenIdConnectClient by lazy {
+	actual val openIDClient: OpenIdConnectClient by lazy {
 		DefaultOpenIdConnectClient(httpClient, OpenIdConnectClientConfig().apply {
 			endpoints {
 				tokenEndpoint = "https://api.sumup.com/token"
