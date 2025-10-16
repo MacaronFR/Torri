@@ -56,7 +56,6 @@ import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import io.ktor.client.HttpClient
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 val activated = booleanPreferencesKey("activated")
 val clientKey = stringPreferencesKey("clientID")
