@@ -87,8 +87,8 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
 fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient) {
+    val snackBarState = remember { SnackbarHostState() }
     SumUp.onLogin = { isLogged ->
         if(!isLogged) {
             dataStore.data.collect {
@@ -100,7 +100,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                                 remove(sumupAccessToken)
                                 remove(sumupRefreshToken)
                                 remove(sumupExpire)
-                                //TODO Inform error
+                                snackBarState.showSnackbar("Reconnexion à SumUp impossible")
                             } else {
                                 set(sumupAccessToken, newTokens.access_token)
                                 newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
@@ -110,8 +110,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                     }
                     newTokens?.let { SumUp.login(it.access_token) }
                 } else {
-                    // Notify disconnected from SumUp
-                    println("Disconnected from Sumup")
+                    snackBarState.showSnackbar("Session SumUp expirée")
                 }
             }
         }
@@ -166,7 +165,6 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
         it.width < it.height
     }
     val navigationController = rememberNavController()
-    val snackBarState = remember { SnackbarHostState() }
     SumUp.snackBarState = snackBarState
     AppTheme {
         if(loggedIn == false) {
@@ -214,7 +212,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             val id = backStackEntry.arguments?.read {
                                 this.getStringOrNull("id")?.toLongOrNull()
                             } ?: 0L
-                            PriceListEditScreen(priceList, savedItems, navigationController, id)
+                            PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState)
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }

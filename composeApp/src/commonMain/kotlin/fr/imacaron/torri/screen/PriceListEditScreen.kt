@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,17 +49,20 @@ import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
+import fr.imacaron.torri.viewmodel.ServiceViewModel
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
 import kotlin.collections.get
 
 @Composable
-fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: SavedItemViewModel, navController: NavController, id: Long) {
+fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: SavedItemViewModel, navController: NavController, id: Long, serviceViewModel: ServiceViewModel, snackBarState: SnackbarHostState) {
 	val priceList = priceListViewModel.priceLists.find { it.priceList.idPriceList == id }
 	var name by remember { mutableStateOf(priceList?.priceList?.name ?: "") }
 	var currency by remember { mutableStateOf(priceList?.priceList?.currency ?: "") }
 	val items = remember { mutableStateListOf<PriceListItemEntity>() }
+	val scope = rememberCoroutineScope()
 	LaunchedEffect(priceList) {
 		if(priceList != null) {
 			items.addAll(priceListViewModel.getPriceListItems(priceList.priceList))
@@ -67,11 +72,17 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Card(Modifier.padding(top = 4.dp, start = 4.dp, end = 4.dp).fillMaxWidth()) {
 			Row(Modifier.padding(horizontal = 4.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-				Text("Ajouter un tarif", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
+				Text("Modifier un tarif", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
 				IconButton( {
 					priceList?.let {
-						priceListViewModel.delete(priceList.priceList)
-						navController.popBackStack()
+						if(serviceViewModel.currentService?.idPriceList == it.priceList.idPriceList || serviceViewModel.services.any { service -> service.idPriceList == it.priceList.idPriceList}) {
+							scope.launch {
+								snackBarState.showSnackbar("Impossible de supprimer ce tarif. Il est actuellement utilisé dans un service actuel ou terminé")
+							}
+						} else {
+							priceListViewModel.delete(priceList.priceList)
+							navController.popBackStack()
+						}
 					}
 				}) {
 					Icon(Lucide.Trash, contentDescription = "Supprimer ce tarif")
