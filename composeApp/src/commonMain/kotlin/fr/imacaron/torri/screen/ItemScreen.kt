@@ -14,12 +14,14 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,13 +29,16 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import fr.imacaron.torri.data.ItemEntity
+import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
 
 @Composable
-fun ItemScreen(savedItems: SavedItemViewModel) {
+fun ItemScreen(savedItems: SavedItemViewModel, priceListViewModel: PriceListViewModel, snackBarState: SnackbarHostState) {
+	val scope = rememberCoroutineScope()
 	var item by remember { mutableStateOf<ItemEntity?>(null) }
 	LazyColumn {
 		items(savedItems.items) {
@@ -52,7 +57,16 @@ fun ItemScreen(savedItems: SavedItemViewModel) {
 	if(item != null) {
 		AlertDialog(
 			{ item = null },
-			{ TextButton({ savedItems.remove(item!!); item = null }) { Text("Supprimer") } },
+			{ TextButton({
+				if(priceListViewModel.priceLists.any { pl -> pl.items.any { i -> i.idItem == item?.idItem } }) {
+					scope.launch {
+						snackBarState.showSnackbar("Ce produit est utilisé dans un tarif et ne peut pas être supprimé")
+					}
+				} else {
+					savedItems.remove(item!!)
+					item = null
+				}
+			}) { Text("Supprimer") } },
 			dismissButton = { TextButton({ item = null }) { Text("Annuler") } },
 			title = { Text("Supprimer l'article") },
 			text = { Text("Êtes vous sur de vouloir supprimer l'article ${item!!.name} ?") }

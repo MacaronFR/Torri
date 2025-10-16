@@ -214,7 +214,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             } ?: 0L
                             PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState)
                         }
-                        composable(Destination.ITEMS.route) { ItemScreen(savedItems) }
+                        composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
                         composable(Destination.CONF.route) { ConfScreen(dataStore) }
                     }
