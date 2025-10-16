@@ -141,7 +141,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 			{ addItemDialog = false }
 		) {
 			Card(Modifier.fillMaxWidth()) {
-				OutlinedTextField(price, { price = it }, label = { Text("Prix en $currency") }, modifier = Modifier.padding(16.dp).fillMaxWidth(), keyboardActions = KeyboardActions(onDone = { onDone() }), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, autoCorrectEnabled = false, imeAction = ImeAction.Done))
+				OutlinedTextField(price, { price = it.replace(',', '.') }, label = { Text("Prix en $currency") }, modifier = Modifier.padding(16.dp).fillMaxWidth(), keyboardActions = KeyboardActions(onDone = { onDone() }), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, autoCorrectEnabled = false, imeAction = ImeAction.Done))
 				LazyColumn {
 					items(savedItems.items) { item ->
 						Row(
