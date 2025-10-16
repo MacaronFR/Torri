@@ -56,6 +56,9 @@ class LicenceRegistration(client: HttpClient? = null) {
 				if(response.status.value == 403 && response.bodyAsText() == "Licence number mismatch") {
 					return@withContext Result.failure(Exception("licence number error"))
 				}
+				if(response.status.value == 403 && response.bodyAsText() == "Max devices reached") {
+					return@withContext Result.failure(Exception("max devices"))
+				}
 				if(response.status.value != 200) {
 					return@withContext Result.failure(Exception("Unknown error"))
 				}
