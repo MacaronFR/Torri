@@ -30,7 +30,7 @@ kotlin {
         }
 
         iosTarget.compilations.getByName("main") {
-            val SumUp by cinterops.creating {
+            cinterops.creating {
                 definitionFile.set(project.file("SumUpSDK.def"))
                 compilerOpts("-framework", "SumUpSDK", "-F/$rootDir/SumUpSDK.xcframework/ios-arm64_x86_64-simulator")
             }

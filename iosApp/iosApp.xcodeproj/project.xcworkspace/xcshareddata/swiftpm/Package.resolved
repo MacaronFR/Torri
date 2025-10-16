@@ -1,0 +1,15 @@
+{
+  "originHash" : "144e3478fd37ddeeda7d4bd662cd7f55ab5965c39b863a4354ccc903b5efb9ef",
+  "pins" : [
+    {
+      "identity" : "sumup-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sumup/sumup-ios-sdk",
+      "state" : {
+        "branch" : "master",
+        "revision" : "5b89d6b0a2cf0e6dca8f353b9cb2305bbba924fd"
+      }
+    }
+  ],
+  "version" : 3
+}
