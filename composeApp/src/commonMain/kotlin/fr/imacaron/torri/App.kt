@@ -88,6 +88,7 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient) {
+    var reloadConfScreen by remember { mutableStateOf(false) }
     val snackBarState = remember { SnackbarHostState() }
     SumUp.onLogin = { isLogged ->
         if(!isLogged) {
@@ -114,6 +115,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                 }
             }
         }
+        reloadConfScreen = !reloadConfScreen
     }
     SumUp.init()
     var loggedIn by remember { mutableStateOf<Boolean?>(null) }
@@ -216,7 +218,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
-                        composable(Destination.CONF.route) { ConfScreen(dataStore) }
+                        composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, { reloadConfScreen = !reloadConfScreen}) }
                     }
                 }
             }

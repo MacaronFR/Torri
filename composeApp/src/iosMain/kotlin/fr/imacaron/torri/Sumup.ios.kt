@@ -59,7 +59,7 @@ actual object SumUp {
 
     actual val isLogged: Boolean
         get() {
-            return SMPSumUpSDK.isLoggedIn
+            return SMPSumUpSDK.isLoggedIn()
         }
 
     actual val onPayCompleted: (data: CardTransactionInfo) -> Unit = {

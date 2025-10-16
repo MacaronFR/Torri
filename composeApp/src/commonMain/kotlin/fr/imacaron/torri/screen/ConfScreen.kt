@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,8 +34,7 @@ import fr.imacaron.torri.sumupRefreshToken
 import kotlinx.coroutines.launch
 
 @Composable
-fun ConfScreen(dataStore: DataStore<Preferences>) {
-	var reload by remember { mutableStateOf(false) }
+fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit) {
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
@@ -46,7 +46,7 @@ fun ConfScreen(dataStore: DataStore<Preferences>) {
 			else -> {}
 		}
 	}
-	LaunchedEffect(reload) {
+	LaunchedEffect(reloadConfScreen) {
 		SumUp.isLogged
 	}
 	Column(Modifier.padding(8.dp)) {
@@ -64,7 +64,7 @@ fun ConfScreen(dataStore: DataStore<Preferences>) {
 							}
 						}
 					}
-					reload = !reload
+					doReload()
 				}) {
 					Text("Se déconnecter de SumUp")
 					Icon(Lucide.LogOut, "Se déconnecter de SumUp")
@@ -74,7 +74,7 @@ fun ConfScreen(dataStore: DataStore<Preferences>) {
 					scope.launch {
 						val newTokens = SumUp.fetchToken()
 						if(newTokens == null) {
-							//TODO Inform error
+							snackBarState.showSnackbar("Impossible de se connecter")
 							return@launch
 						}
 						dataStore.updateData {
