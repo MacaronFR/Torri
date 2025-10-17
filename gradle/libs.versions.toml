@@ -2,13 +2,14 @@
 agp = "8.10.1"
 android-compileSdk = "36"
 android-minSdk = "24"
-android-targetSdk = "35"
-androidx-activity = "1.10.1"
+android-targetSdk = "36"
+androidx-activity = "1.11.0"
 androidx-lifecycle = "2.9.1"
 composeMultiplatform = "1.8.2"
+desugar_jdk_libs = "2.1.5"
 kotlin = "2.2.0"
-room = "2.7.2"
-sqlite = "2.5.2"
+room = "2.8.2"
+sqlite = "2.6.1"
 ksp = "2.2.0-2.0.2"
 ktor = "3.2.2"
 oidc = "0.15.1"
@@ -17,6 +18,7 @@ oidc = "0.15.1"
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room"}
 sqlite = { group = "androidx.sqlite", name = "sqlite-bundled", version.ref = "sqlite" }

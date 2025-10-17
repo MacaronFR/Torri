@@ -87,10 +87,9 @@ android {
         applicationId = "fr.imacaron.torri"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 4
-        versionName = "1.2.0"
+        versionCode = 5
+        versionName = "1.3.0"
         addManifestPlaceholders(
-//            mapOf("oidcRedirectScheme" to "https")
             mapOf("oidcRedirectScheme" to "fr.imacaron.torri")
         )
     }
@@ -112,7 +111,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     debugImplementation(compose.uiTooling)
     add("kspAndroid", libs.room.compiler)
     add("kspIosSimulatorArm64", libs.room.compiler)

@@ -46,12 +46,10 @@ class CustomTrustManager(config: TLSConfigBuilder): X509TrustManager {
 	}
 
 	override fun checkServerTrusted(chain: Array<out X509Certificate?>?, authType: String?) {
-		if(chain?.first()?.subjectDN?.name == "CN=api.sumup.com") {
-			return
-		} else if(chain?.first()?.subjectDN?.name == "CN=licence.imacaron.fr") {
-			return
-		} else {
-			defaultTrustManager.checkServerTrusted(chain, authType)
+		when(chain?.first()?.subjectDN?.name) {
+			"CN=api.sumup.com" -> return
+			"CN=licence.imacaron.fr" -> return
+			else -> defaultTrustManager.checkServerTrusted(chain, authType)
 		}
 	}
 
@@ -133,6 +131,7 @@ class MainActivity : ComponentActivity() {
 			val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 				data.extras?.getParcelable(SumUpAPI.Response.TX_INFO, TransactionInfo::class.java)
 			} else {
+				@Suppress("DEPRECATION")
 				data.extras?.getParcelable(SumUpAPI.Response.TX_INFO)
 			}!!
 			sumUpOnResult(CardTransactionInfo(
