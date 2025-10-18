@@ -1,14 +1,20 @@
 package fr.imacaron.torri
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.lifecycleScope
@@ -72,6 +78,8 @@ class MainActivity : ComponentActivity() {
 		}
 	}
 
+	private val nearby = NearbyAndroid(this)
+
 	@SuppressLint("SourceLockedOrientationActivity")
 	override fun onCreate(savedInstanceState: Bundle?) {
 		activity = this
@@ -88,7 +96,7 @@ class MainActivity : ComponentActivity() {
 		SumUp.activity = this
 		SumUp.httpClient = client
 		setContent {
-			App(getRoomDataBase(getDatabaseBuilder(this)), dataStore, client = client)
+			App(getRoomDataBase(getDatabaseBuilder(this)), dataStore, client = client, nearby = nearby)
 		}
 	}
 
@@ -139,5 +147,28 @@ class MainActivity : ComponentActivity() {
 				data.status
 			))
 		}
+	}
+
+	val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+		println(isGranted)
+	}
+
+	fun checkPermission(block: (granted: Boolean) -> Unit) {
+		var wifi = false
+		when {
+			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_WIFI_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+				wifi = true
+			}
+
+			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_WIFI_STATE) -> {
+				println("C'est chiant")
+			}
+
+			else -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_WIFI_STATE)
+				wifi = false
+			}
+		}
+		block(wifi)
 	}
 }

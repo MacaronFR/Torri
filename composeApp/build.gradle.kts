@@ -46,6 +46,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation("com.sumup:merchant-sdk:4.2.0")
+            implementation(libs.play.services.nearby.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
