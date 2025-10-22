@@ -163,20 +163,84 @@ class MainActivity : ComponentActivity() {
 
 	fun checkPermission(block: (granted: Boolean) -> Unit) {
 		var wifi = false
+		var nearWifi = false
+		var bluetoothAdvertise = false
+		var bluetoothScan = false
+		var coarseLocation = false
+		var fineLocation = false
 		when {
 			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_WIFI_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
 				wifi = true
 			}
-
 			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_WIFI_STATE) -> {
-				println("C'est chiant")
+				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_WIFI_STATE)
 			}
-
 			else -> {
 				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_WIFI_STATE)
 				wifi = false
 			}
 		}
-		block(wifi)
+		when {
+			ContextCompat.checkSelfPermission(this, android.Manifest.permission.NEARBY_WIFI_DEVICES) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+				nearWifi = true
+			}
+			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.NEARBY_WIFI_DEVICES) -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.NEARBY_WIFI_DEVICES)
+			}
+			else -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.NEARBY_WIFI_DEVICES)
+				nearWifi = false
+			}
+		}
+		when {
+			ContextCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_ADVERTISE) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+				bluetoothAdvertise = true
+			}
+			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.BLUETOOTH_ADVERTISE) -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_ADVERTISE)
+			}
+			else -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_ADVERTISE)
+				bluetoothAdvertise = false
+			}
+		}
+		when {
+			ContextCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_SCAN) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+				bluetoothScan = true
+			}
+			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.BLUETOOTH_SCAN) -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_SCAN)
+			}
+			else -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_SCAN)
+				bluetoothScan = false
+			}
+		}
+		when {
+			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+				coarseLocation = true
+			}
+			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+			}
+			else -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION)
+				coarseLocation = false
+			}
+		}
+		when {
+			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+				fineLocation = true
+			}
+			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+			}
+			else -> {
+				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+				println("Maintenant")
+				fineLocation = false
+			}
+		}
+		block(wifi && nearWifi && bluetoothAdvertise && bluetoothScan && coarseLocation && fineLocation)
 	}
 }
