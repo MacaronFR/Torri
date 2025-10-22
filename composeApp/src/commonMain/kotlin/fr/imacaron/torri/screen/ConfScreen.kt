@@ -15,8 +15,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -40,13 +44,22 @@ import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.activated
 import fr.imacaron.torri.clientKey
+import fr.imacaron.torri.components.SyncDialog
+import fr.imacaron.torri.data.AppDataBase
+import fr.imacaron.torri.data.exportDatabase
+import fr.imacaron.torri.data.exportDatabaseToFile
+import fr.imacaron.torri.data.importDatabase
+import fr.imacaron.torri.data.importDatabaseFromFile
 import fr.imacaron.torri.sumupAccessToken
 import fr.imacaron.torri.sumupExpire
 import fr.imacaron.torri.sumupRefreshToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby) {
+fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase) {
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
@@ -138,69 +151,41 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				Icon(Lucide.LogOut, "Se déconnecter")
 			}
 		}
-		Row {
-			Button(
-				{
-					if(nearby.discovering) {
-						nearby.stopDiscovery()
-					}else {
-						nearby.startDiscovery()
+		Text("Synchronisation des données", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+		Card(Modifier.fillMaxWidth()) {
+			var syncDialog by remember { mutableStateOf(false) }
+			TextButton({
+				scope.launch(Dispatchers.IO) {
+					exportDatabaseToFile(exportDatabase(db))
+					withContext(Dispatchers.Default) {
+						snackBarState.showSnackbar("Export réussi")
 					}
-				},
-				enabled = !nearby.advertising && nearby.connecting == null && nearby.connected == null
-			) {
-				if(nearby.discovering) {
-					Text("Discovering")
-				} else {
-					Text("Discover")
 				}
+			}, Modifier.fillMaxWidth()) {
+				Text("Exporter les données", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
 			}
-			Button(
-				{
-					if(nearby.advertising) {
-						nearby.stopAdvertising()
-					} else {
-						nearby.startAdvertising()
-					}
-				},
-				enabled = !nearby.discovering && nearby.connecting == null && nearby.connected == null
-			) {
-				if(nearby.advertising) {
-					Text("Advertising")
-				} else {
-					Text("Advertise")
-				}
-			}
-		}
-		if(nearby.discovering) {
-			if(nearby.discoveredDevices.isEmpty()) {
-				Text("Aucun appareil détecté")
-			} else {
-				LazyColumn {
-					items(nearby.discoveredDevices) {
-						Card(Modifier.padding(8.dp).fillMaxWidth().clickable { nearby.connect(it) }) {
-							Row(Modifier.padding(8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-								Text("Appareil ${it.name} (${it.id})")
-								IconButton({ nearby.connect(it) }) {
-									Icon(Lucide.ArrowRight, "Se connecter à l'appareil")
-								}
-							}
+			TextButton({
+				scope.launch(Dispatchers.IO) {
+					importDatabaseFromFile().onSuccess {
+						importDatabase(it, db)
+						doReload()
+						withContext(Dispatchers.Main) {
+							snackBarState.showSnackbar("Import réussi")
+						}
+					}.onFailure {
+						withContext(Dispatchers.Main) {
+							snackBarState.showSnackbar("Erreur lors de l'import: ${it.message}", duration = SnackbarDuration.Long)
 						}
 					}
 				}
+			}, Modifier.fillMaxWidth()) {
+				Text("Importer des données", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
 			}
-		}
-		nearby.connecting?.let { connecting ->
-			Text("Connexion à ${connecting.name}…")
-		}
-		nearby.connected?.let { connected ->
-			Card(Modifier.padding(8.dp).fillMaxWidth()) {
-				Row(Modifier.padding(8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-					Text("Connecté à ${connected.name}")
-					IconButton({ nearby.disconnect() }) {
-						Icon(Lucide.LogOut, "Se déconnecter de l'appareil")
-					}
-				}
+			TextButton({ syncDialog = true }, Modifier.fillMaxWidth()) {
+				Text("Synchroniser avec un autre appareil", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+			}
+			SyncDialog(syncDialog, nearby, db, snackBarState) {
+				syncDialog = false
 			}
 		}
 	}

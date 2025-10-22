@@ -18,6 +18,10 @@ abstract class Nearby {
 
 	abstract fun disconnect()
 
+	abstract fun sendData(data: ByteArray)
+
+	abstract suspend fun receiveData(): ByteArray?
+
 	abstract var advertising: Boolean
 		protected set
 
@@ -31,6 +35,9 @@ abstract class Nearby {
 		protected set
 
 	var error: String? by mutableStateOf(null)
+		protected set
+
+	var master: Boolean by mutableStateOf(false)
 		protected set
 
 	val discoveredDevices: MutableList<Device> = mutableStateListOf()

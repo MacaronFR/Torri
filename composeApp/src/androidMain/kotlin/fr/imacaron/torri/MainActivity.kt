@@ -1,14 +1,11 @@
 package fr.imacaron.torri
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -20,14 +17,18 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.lifecycleScope
 import com.sumup.merchant.reader.api.SumUpAPI
 import com.sumup.merchant.reader.models.TransactionInfo
+import fr.imacaron.torri.data.getDatabaseBuilder
 import fr.imacaron.torri.data.getRoomDataBase
+import fr.imacaron.torri.data.mainActivity
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.tls.TLSConfigBuilder
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
+import org.publicvalue.multiplatform.oidc.appsupport.registerForActivityResultSuspend
 import java.security.KeyStore
 import java.security.cert.X509Certificate
 import javax.net.ssl.TrustManagerFactory
@@ -83,6 +84,7 @@ class MainActivity : ComponentActivity() {
 	@SuppressLint("SourceLockedOrientationActivity")
 	override fun onCreate(savedInstanceState: Bundle?) {
 		activity = this
+		mainActivity = this
 		(SumUp.codeAuthFlowFactory as AndroidCodeAuthFlowFactory).registerActivity(this)
 		enableEdgeToEdge()
 		if(resources.getBoolean(R.bool.force_portrait)) {
@@ -152,6 +154,12 @@ class MainActivity : ComponentActivity() {
 	val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
 		println(isGranted)
 	}
+
+	val openDocumentsFlow = MutableStateFlow<Uri?>(null)
+	val requestDocumentAccessLauncher = registerForActivityResultSuspend(openDocumentsFlow, ActivityResultContracts.OpenDocument())
+
+	val createDocumentFlow = MutableStateFlow<Uri?>(null)
+	val requestCreateFileLauncher = registerForActivityResultSuspend(createDocumentFlow, ActivityResultContracts.CreateDocument("application/json"))
 
 	fun checkPermission(block: (granted: Boolean) -> Unit) {
 		var wifi = false

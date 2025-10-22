@@ -2,6 +2,7 @@ package fr.imacaron.torri
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
@@ -16,6 +17,19 @@ import com.google.android.gms.nearby.connection.Payload
 import com.google.android.gms.nearby.connection.PayloadCallback
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.onFailure
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.single
+import okhttp3.internal.wait
+import java.io.InputStream
 import com.google.android.gms.nearby.Nearby as GoogleNearby
 
 class NearbyAndroid(
@@ -28,8 +42,8 @@ class NearbyAndroid(
 
 	override var discovering by mutableStateOf(false)
 
-
 	override fun startAdvertising() {
+		master = true
 		activity.checkPermission {
 			if(it) {
 				val options = AdvertisingOptions.Builder()
@@ -54,6 +68,7 @@ class NearbyAndroid(
 	}
 
 	override fun startDiscovery() {
+		master = false
 		activity.checkPermission {
 			if(it) {
 				val options = DiscoveryOptions.Builder()
@@ -80,7 +95,7 @@ class NearbyAndroid(
 	}
 
 	override fun connect(device: Device) {
-		discovering = false
+		stopDiscovery()
 		connecting = device
 		GoogleNearby.getConnectionsClient(activity)
 			.requestConnection(name, device.id, Callback())
@@ -98,17 +113,47 @@ class NearbyAndroid(
 		advertising = false
 	}
 
+	override fun sendData(data: ByteArray) {
+		if(connected == null || !master) {
+			return
+		}
+		val payload = Payload.fromBytes(data)
+		GoogleNearby.getConnectionsClient(activity).sendPayload(connected?.id ?: "", payload).continueWith {
+
+		}
+	}
+
+	private var receiving = false
+	private var receivingPayload: Payload? = null
+	private var receivingUpdateChannel: Channel<PayloadTransferUpdate> = Channel(capacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+	override suspend fun receiveData(): ByteArray? {
+		if (receiving) {
+			return null
+		}
+		println("Receive data")
+		receiving = true
+		var update: PayloadTransferUpdate?
+		do {
+			update = receivingUpdateChannel.receive()
+			delay(100)
+			println("Receive payload transfer update: ${update.status}")
+		} while (update.status != PayloadTransferUpdate.Status.SUCCESS)
+		println("payload full")
+		return receivingPayload?.asBytes()?.also { receivingPayload = null; receiving = false }
+	}
+
 	private inner class Callback: ConnectionLifecycleCallback() {
 		override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
 			connecting = Device(connectionInfo.endpointName, endpointId)
-			discovering = false
-			advertising = false
+			stopDiscovery()
+			stopAdvertising()
 			GoogleNearby.getConnectionsClient(activity).acceptConnection(endpointId, InputCallback())
 		}
 
 		override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
-			discovering = false
-			advertising = false
+			stopDiscovery()
+			stopAdvertising()
 			when(result.status.statusCode) {
 				ConnectionsStatusCodes.STATUS_OK -> {
 					connected = connecting
@@ -151,12 +196,16 @@ class NearbyAndroid(
 	}
 
 	private inner class InputCallback: PayloadCallback() {
-		override fun onPayloadReceived(p0: String, p1: Payload) {
-			println("Payload received from $p0: ${p1.type}")
+		override fun onPayloadReceived(endpointId: String, payload: Payload) {
+			println("Receive payload")
+			receivingPayload = payload
 		}
 
-		override fun onPayloadTransferUpdate(p0: String, p1: PayloadTransferUpdate) {
-			println("Payload transfer update from $p0: ${p1.status}")
+		override fun onPayloadTransferUpdate(endpointId: String, transferUpdate: PayloadTransferUpdate) {
+			println("Receive payload transfer update")
+			receivingUpdateChannel.trySend(transferUpdate).onFailure {
+				it?.printStackTrace()
+			}
 		}
 
 	}
