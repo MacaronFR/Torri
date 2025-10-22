@@ -1,25 +1,11 @@
 package fr.imacaron.torri.data
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.os.Environment
-import androidx.core.net.toFile
-import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import fr.imacaron.torri.MainActivity
-import io.ktor.util.cio.readChannel
-import io.ktor.util.cio.writeChannel
-import io.ktor.utils.io.copyTo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 
 const val DB_NAME = "torri_room"
 

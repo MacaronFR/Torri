@@ -2,13 +2,11 @@ package fr.imacaron.torri
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
 import com.google.android.gms.nearby.connection.ConnectionResolution
-import com.google.android.gms.nearby.connection.ConnectionsClient
 import com.google.android.gms.nearby.connection.ConnectionsStatusCodes
 import com.google.android.gms.nearby.connection.DiscoveredEndpointInfo
 import com.google.android.gms.nearby.connection.DiscoveryOptions
@@ -19,17 +17,7 @@ import com.google.android.gms.nearby.connection.PayloadTransferUpdate
 import com.google.android.gms.nearby.connection.Strategy
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.consume
-import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.onFailure
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.single
-import okhttp3.internal.wait
-import java.io.InputStream
 import com.google.android.gms.nearby.Nearby as GoogleNearby
 
 class NearbyAndroid(
@@ -53,7 +41,6 @@ class NearbyAndroid(
 					.addOnSuccessListener {
 						advertising = true
 					}.addOnFailureListener {
-						println("startAdvertising:onResult:failure")
 						it.printStackTrace()
 					}
 			} else {
@@ -79,7 +66,6 @@ class NearbyAndroid(
 						discovering = true
 					}
 					.addOnFailureListener {
-						println("startDiscovery:onResult:failure")
 						it.printStackTrace()
 					}
 			} else {
@@ -100,7 +86,6 @@ class NearbyAndroid(
 		GoogleNearby.getConnectionsClient(activity)
 			.requestConnection(name, device.id, Callback())
 			.addOnFailureListener {
-				println("requestConnection:onResult:failure")
 				it.printStackTrace()
 			}
 	}
@@ -131,15 +116,11 @@ class NearbyAndroid(
 		if (receiving) {
 			return null
 		}
-		println("Receive data")
 		receiving = true
 		var update: PayloadTransferUpdate?
 		do {
 			update = receivingUpdateChannel.receive()
-			delay(100)
-			println("Receive payload transfer update: ${update.status}")
 		} while (update.status != PayloadTransferUpdate.Status.SUCCESS)
-		println("payload full")
 		return receivingPayload?.asBytes()?.also { receivingPayload = null; receiving = false }
 	}
 
@@ -197,12 +178,10 @@ class NearbyAndroid(
 
 	private inner class InputCallback: PayloadCallback() {
 		override fun onPayloadReceived(endpointId: String, payload: Payload) {
-			println("Receive payload")
 			receivingPayload = payload
 		}
 
 		override fun onPayloadTransferUpdate(endpointId: String, transferUpdate: PayloadTransferUpdate) {
-			println("Receive payload transfer update")
 			receivingUpdateChannel.trySend(transferUpdate).onFailure {
 				it?.printStackTrace()
 			}
