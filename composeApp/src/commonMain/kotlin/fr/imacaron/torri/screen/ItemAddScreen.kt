@@ -80,7 +80,7 @@ fun ItemAddScreen(savedItems: SavedItemViewModel, navController: NavController) 
 							horizontalArrangement = Arrangement.spacedBy(8.dp),
 							verticalAlignment = Alignment.CenterVertically
 						) {
-							RadioButton(image == imageKey, {} )
+							RadioButton(image == imageKey, { image = imageKey } )
 							Image(painterResource(drawable), "Image $imageKey", Modifier.height(24.dp))
 							Text(imageKey.capitalize(Locale.current).replace("_", " "), Modifier.padding(start = 8.dp))
 						}

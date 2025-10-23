@@ -16,7 +16,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class ServiceViewModel(private val db: AppDataBase): ViewModel() {
+class ServiceViewModel(private val db: AppDataBase, private val commandViewModel: CommandViewModel, private val itemViewModel: SavedItemViewModel): ViewModel() {
 	val services = mutableStateListOf<ServiceEntity>()
 	var currentService by mutableStateOf<ServiceEntity?>(null)
 
@@ -63,5 +63,15 @@ class ServiceViewModel(private val db: AppDataBase): ViewModel() {
 
 	suspend fun loadServiceCommand(service: ServiceEntity): List<CommandEntity> {
 		return db.commandDao().getByService(service.idService)
+	}
+
+	suspend fun exportToCSV(service: ServiceEntity): String {
+		val commands = loadServiceCommand(service)
+		val csv = commands.map { command ->
+			commandViewModel.loadCommandDetail(command).joinToString("\n") {
+				"${command.idCommand}${itemViewModel.items.find { i -> i.idItem == it.priceListItem.idItem }?.name};${it.commandPriceListItem.quantity};${it.priceListItem.price * it.commandPriceListItem.quantity};${command.payementMethod}"
+			}
+		}.joinToString("\n")
+		return "ID;Article;Quantité;Prix;Méthode de paiement\n$csv"
 	}
 }

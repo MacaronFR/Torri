@@ -151,8 +151,8 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     }
     val savedItems = viewModel { SavedItemViewModel(dataBase) }
     val priceList = viewModel { PriceListViewModel(dataBase) }
-    val serviceViewModel = viewModel { ServiceViewModel(dataBase) }
     val commandViewModel = viewModel { CommandViewModel(dataBase) }
+    val serviceViewModel = viewModel { ServiceViewModel(dataBase, commandViewModel, savedItems) }
     val displaySidePanel = windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.EXPANDED)

@@ -16,16 +16,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import androidx.savedstate.read
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.BookText
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Plus
+import com.composables.icons.lucide.Save
 import com.composables.icons.lucide.Send
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.activated
 import fr.imacaron.torri.clientKey
+import fr.imacaron.torri.saveToFile
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import kotlinx.coroutines.launch
 
@@ -41,20 +45,6 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dat
 		{ Text("Torri") },
 		actions = {
 			when(currentRoute) {
-				Destination.SERVICE.route -> {
-					IconButton({
-						scope.launch {
-							dataStore.updateData {
-								it.toMutablePreferences().apply {
-									remove(activated)
-									remove(clientKey)
-								}
-							}
-						}
-					}) {
-						Icon(Lucide.LogOut, "Se déconnecter", tint = MaterialTheme.colorScheme.primary)
-					}
-				}
 				Destination.SERVICE_COMMAND.route -> {
 					var doneDialog by remember { mutableStateOf(false) }
 					IconButton({ navController.navigate(Destination.SERVICE_COMMAND_DETAIL.route) }) {
@@ -74,6 +64,20 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dat
 							title = { Text("Clore et sauvegarder le service") },
 							text = { Text("Un fois clos, ce service ne pourra plus être modifié") }
 						)
+					}
+				}
+				Destination.SERVICE_DETAIL.route -> {
+					val serviceId = navController.currentBackStackEntry?.arguments?.read { this.getStringOrNull("id")?.toLongOrNull() }
+					IconButton({
+						serviceViewModel.viewModelScope.launch {
+							serviceId?.let { sID ->
+								serviceViewModel.services.find { it.idService == sID }?.let { service ->
+									saveToFile("TORRI_SERVICE_$sID.csv", serviceViewModel.exportToCSV(service))
+								}
+							}
+						}
+					}) {
+						Icon(Lucide.Save, "Exporter le service en CSV", tint = MaterialTheme.colorScheme.primary)
 					}
 				}
 				Destination.ITEMS.route -> {

@@ -6,14 +6,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,6 +31,8 @@ import com.composables.icons.lucide.LogIn
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.SumUp
+import fr.imacaron.torri.activated
+import fr.imacaron.torri.clientKey
 import fr.imacaron.torri.sumupAccessToken
 import fr.imacaron.torri.sumupExpire
 import fr.imacaron.torri.sumupRefreshToken
@@ -35,7 +43,11 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
+	var username by remember { mutableStateOf<String?>(null) }
 	LaunchedEffect(lifecycleState) {
+		dataStore.data.collect { pref ->
+			username = pref[clientKey]
+		}
 		when(lifecycleState) {
 			Lifecycle.State.RESUMED -> {
 				SumUp.isLogged
@@ -94,6 +106,29 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				Button({ SumUp.cardReaderPage() }) {
 					Text("Configuration du terminal")
 				}
+			}
+		}
+		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+			Column {
+				Text("Compte")
+				if(username == null) {
+					Text("Chargement...")
+				}else {
+					Text("Nom d'utilisateur: $username")
+				}
+			}
+			Button({
+				scope.launch {
+					dataStore.updateData {
+						it.toMutablePreferences().apply {
+							remove(activated)
+							remove(clientKey)
+						}
+					}
+				}
+			}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)) {
+				Text("Se déconnecter")
+				Icon(Lucide.LogOut, "Se déconnecter")
 			}
 		}
 	}
