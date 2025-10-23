@@ -3,6 +3,7 @@ package fr.imacaron.torri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.nearby.connection.AdvertisingOptions
 import com.google.android.gms.nearby.connection.ConnectionInfo
 import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback
@@ -18,6 +19,7 @@ import com.google.android.gms.nearby.connection.Strategy
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
+import kotlinx.coroutines.launch
 import com.google.android.gms.nearby.Nearby as GoogleNearby
 
 class NearbyAndroid(
@@ -32,19 +34,21 @@ class NearbyAndroid(
 
 	override fun startAdvertising() {
 		master = true
-		activity.checkPermission {
-			if(it) {
-				val options = AdvertisingOptions.Builder()
-					.setStrategy(Strategy.P2P_POINT_TO_POINT).build()
-				GoogleNearby.getConnectionsClient(activity)
-					.startAdvertising(name, serviceId, Callback(), options)
-					.addOnSuccessListener {
-						advertising = true
-					}.addOnFailureListener {
-						it.printStackTrace()
-					}
-			} else {
-				println("startAdvertising:onResult:permission")
+		activity.lifecycleScope.launch {
+			activity.checkPermission {
+				if(it) {
+					val options = AdvertisingOptions.Builder()
+						.setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+					GoogleNearby.getConnectionsClient(activity)
+						.startAdvertising(name, serviceId, Callback(), options)
+						.addOnSuccessListener {
+							advertising = true
+						}.addOnFailureListener {
+							it.printStackTrace()
+						}
+				} else {
+					println("startAdvertising:onResult:permission")
+				}
 			}
 		}
 	}
@@ -56,20 +60,22 @@ class NearbyAndroid(
 
 	override fun startDiscovery() {
 		master = false
-		activity.checkPermission {
-			if(it) {
-				val options = DiscoveryOptions.Builder()
-					.setStrategy(Strategy.P2P_POINT_TO_POINT).build()
-				GoogleNearby.getConnectionsClient(activity)
-					.startDiscovery(serviceId, DiscoveryCallback(), options)
-					.addOnSuccessListener {
-						discovering = true
-					}
-					.addOnFailureListener {
-						it.printStackTrace()
-					}
-			} else {
-				println("startDiscovery:onResult:permission")
+		activity.lifecycleScope.launch {
+			activity.checkPermission {
+				if (it) {
+					val options = DiscoveryOptions.Builder()
+						.setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+					GoogleNearby.getConnectionsClient(activity)
+						.startDiscovery(serviceId, DiscoveryCallback(), options)
+						.addOnSuccessListener {
+							discovering = true
+						}
+						.addOnFailureListener {
+							it.printStackTrace()
+						}
+				} else {
+					println("startDiscovery:onResult:permission")
+				}
 			}
 		}
 	}
@@ -81,13 +87,13 @@ class NearbyAndroid(
 	}
 
 	override fun connect(device: Device) {
-		stopDiscovery()
 		connecting = device
 		GoogleNearby.getConnectionsClient(activity)
 			.requestConnection(name, device.id, Callback())
 			.addOnFailureListener {
 				it.printStackTrace()
 			}
+		stopDiscovery()
 	}
 
 	override fun disconnect() {

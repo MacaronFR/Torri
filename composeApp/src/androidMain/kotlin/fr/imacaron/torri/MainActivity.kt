@@ -1,8 +1,10 @@
 package fr.imacaron.torri
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +28,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.tls.TLSConfigBuilder
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.appsupport.registerForActivityResultSuspend
@@ -151,9 +154,8 @@ class MainActivity : ComponentActivity() {
 		}
 	}
 
-	val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-		println(isGranted)
-	}
+	private val permissionFlow = MutableStateFlow<Map<String, Boolean>?>(null)
+	val requestPermissionLauncherSuspend = registerForActivityResultSuspend(permissionFlow, ActivityResultContracts.RequestMultiplePermissions())
 
 	val openDocumentsFlow = MutableStateFlow<Uri?>(null)
 	val requestDocumentAccessLauncher = registerForActivityResultSuspend(openDocumentsFlow, ActivityResultContracts.OpenDocument())
@@ -161,86 +163,32 @@ class MainActivity : ComponentActivity() {
 	val createDocumentFlow = MutableStateFlow<Uri?>(null)
 	val requestCreateFileLauncher = registerForActivityResultSuspend(createDocumentFlow, ActivityResultContracts.CreateDocument("application/json"))
 
-	fun checkPermission(block: (granted: Boolean) -> Unit) {
-		var wifi = false
-		var nearWifi = false
-		var bluetoothAdvertise = false
-		var bluetoothScan = false
-		var coarseLocation = false
-		var fineLocation = false
-		when {
-			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_WIFI_STATE) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-				wifi = true
-			}
-			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_WIFI_STATE) -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_WIFI_STATE)
-			}
-			else -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_WIFI_STATE)
-				wifi = false
-			}
+	private suspend fun requestPermission(permissions: List<String>): Boolean {
+		val notGranted = permissions.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+		val toAsk = notGranted.filter { ActivityCompat.shouldShowRequestPermissionRationale(this, it) }
+		val toRequest = notGranted.filter { !ActivityCompat.shouldShowRequestPermissionRationale(this, it) }
+		requestPermissionLauncherSuspend.launch((toAsk + toRequest).toTypedArray())
+		val map = permissionFlow.first { it != null }
+		return map?.all { it.value } ?: false
+	}
+
+	suspend fun checkPermission(block: (granted: Boolean) -> Unit) {
+		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+			block(requestPermission(listOf(
+				Manifest.permission.ACCESS_WIFI_STATE,
+				Manifest.permission.ACCESS_COARSE_LOCATION,
+				Manifest.permission.ACCESS_FINE_LOCATION
+			)))
+		} else {
+			block(requestPermission(listOf(
+				Manifest.permission.ACCESS_WIFI_STATE,
+				Manifest.permission.NEARBY_WIFI_DEVICES,
+				Manifest.permission.BLUETOOTH_ADVERTISE,
+				Manifest.permission.BLUETOOTH_SCAN,
+				Manifest.permission.ACCESS_COARSE_LOCATION,
+				Manifest.permission.ACCESS_FINE_LOCATION,
+				Manifest.permission.BLUETOOTH_CONNECT,
+			)))
 		}
-		when {
-			ContextCompat.checkSelfPermission(this, android.Manifest.permission.NEARBY_WIFI_DEVICES) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-				nearWifi = true
-			}
-			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.NEARBY_WIFI_DEVICES) -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.NEARBY_WIFI_DEVICES)
-			}
-			else -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.NEARBY_WIFI_DEVICES)
-				nearWifi = false
-			}
-		}
-		when {
-			ContextCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_ADVERTISE) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-				bluetoothAdvertise = true
-			}
-			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.BLUETOOTH_ADVERTISE) -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_ADVERTISE)
-			}
-			else -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_ADVERTISE)
-				bluetoothAdvertise = false
-			}
-		}
-		when {
-			ContextCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH_SCAN) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-				bluetoothScan = true
-			}
-			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.BLUETOOTH_SCAN) -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_SCAN)
-			}
-			else -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.BLUETOOTH_SCAN)
-				bluetoothScan = false
-			}
-		}
-		when {
-			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-				coarseLocation = true
-			}
-			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION)
-			}
-			else -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_COARSE_LOCATION)
-				coarseLocation = false
-			}
-		}
-		when {
-			ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
-				fineLocation = true
-			}
-			ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION) -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-			}
-			else -> {
-				requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
-				println("Maintenant")
-				fineLocation = false
-			}
-		}
-		block(wifi && nearWifi && bluetoothAdvertise && bluetoothScan && coarseLocation && fineLocation)
 	}
 }

@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState: SnackbarHostState, onDismiss: () -> Unit) {
+fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState: SnackbarHostState, doReload: () -> Unit, onDismiss: () -> Unit) {
 	LaunchedEffect(nearby.master, nearby.connected, nearby) {
 		withContext(Dispatchers.IO) {
 			if (!nearby.master && nearby.connected != null) {
@@ -55,6 +55,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 				withContext(Dispatchers.Main) {
 					onDismiss()
 					nearby.disconnect()
+					doReload()
 					snackbarState.showSnackbar("Transfert réussi", duration = SnackbarDuration.Long)
 				}
 			}

@@ -121,29 +121,6 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				}
 			}
 		}
-		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-			Column {
-				Text("Compte")
-				if(username == null) {
-					Text("Chargement...")
-				}else {
-					Text("Nom d'utilisateur: $username")
-				}
-			}
-			Button({
-				scope.launch {
-					dataStore.updateData {
-						it.toMutablePreferences().apply {
-							remove(activated)
-							remove(clientKey)
-						}
-					}
-				}
-			}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)) {
-				Text("Se déconnecter")
-				Icon(Lucide.LogOut, "Se déconnecter")
-			}
-		}
 		Text("Synchronisation des données", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
 		Card(Modifier.fillMaxWidth()) {
 			var syncDialog by remember { mutableStateOf(false) }
@@ -177,8 +154,31 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 			TextButton({ syncDialog = true }, Modifier.fillMaxWidth()) {
 				Text("Synchroniser avec un autre appareil", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
 			}
-			SyncDialog(syncDialog, nearby, db, snackBarState) {
+			SyncDialog(syncDialog, nearby, db, snackBarState, doReload) {
 				syncDialog = false
+			}
+		}
+		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+			Column {
+				Text("Compte")
+				if(username == null) {
+					Text("Chargement...")
+				}else {
+					Text("Nom d'utilisateur: $username")
+				}
+			}
+			Button({
+				scope.launch {
+					dataStore.updateData {
+						it.toMutablePreferences().apply {
+							remove(activated)
+							remove(clientKey)
+						}
+					}
+				}
+			}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)) {
+				Text("Se déconnecter")
+				Icon(Lucide.LogOut, "Se déconnecter")
 			}
 		}
 	}
