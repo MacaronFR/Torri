@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		21140CF22EA0359000490977 /* SumUpSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 21140CF12EA0359000490977 /* SumUpSDK */; };
+		215B28582EAA2E0600BF1120 /* NearbyConnections in Frameworks */ = {isa = PBXBuildFile; productRef = 215B28572EAA2E0600BF1120 /* NearbyConnections */; };
+		215B285A2EAA2E0600BF1120 /* NearbyConnectionsDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 215B28592EAA2E0600BF1120 /* NearbyConnectionsDynamic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,7 +47,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				215B285A2EAA2E0600BF1120 /* NearbyConnectionsDynamic in Frameworks */,
 				21140CF22EA0359000490977 /* SumUpSDK in Frameworks */,
+				215B28582EAA2E0600BF1120 /* NearbyConnections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +95,8 @@
 			name = iosApp;
 			packageProductDependencies = (
 				21140CF12EA0359000490977 /* SumUpSDK */,
+				215B28572EAA2E0600BF1120 /* NearbyConnections */,
+				215B28592EAA2E0600BF1120 /* NearbyConnectionsDynamic */,
 			);
 			productName = iosApp;
 			productReference = B9DA97B12DC1472C00A4DA20 /* Torri.app */;
@@ -122,6 +128,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				21140CF02EA0359000490977 /* XCRemoteSwiftPackageReference "sumup-ios-sdk" */,
+				215B28562EAA2E0600BF1120 /* XCRemoteSwiftPackageReference "nearby" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9DA97B22DC1472C00A4DA20 /* Products */;
@@ -415,6 +422,14 @@
 				kind = branch;
 			};
 		};
+		215B28562EAA2E0600BF1120 /* XCRemoteSwiftPackageReference "nearby" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/nearby";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -422,6 +437,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 21140CF02EA0359000490977 /* XCRemoteSwiftPackageReference "sumup-ios-sdk" */;
 			productName = SumUpSDK;
+		};
+		215B28572EAA2E0600BF1120 /* NearbyConnections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 215B28562EAA2E0600BF1120 /* XCRemoteSwiftPackageReference "nearby" */;
+			productName = NearbyConnections;
+		};
+		215B28592EAA2E0600BF1120 /* NearbyConnectionsDynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 215B28562EAA2E0600BF1120 /* XCRemoteSwiftPackageReference "nearby" */;
+			productName = NearbyConnectionsDynamic;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
