@@ -1,6 +1,33 @@
 {
-  "originHash" : "144e3478fd37ddeeda7d4bd662cd7f55ab5965c39b863a4354ccc903b5efb9ef",
+  "originHash" : "250209a1d9a73abfd27e0ea2cc3fcd42084384501d5737612503aea6047ed400",
   "pins" : [
+    {
+      "identity" : "abseil-cpp-swiftpm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/firebase/abseil-cpp-SwiftPM.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1c50c2cd0bffe5a03cde6fe17129334dcf05071b"
+      }
+    },
+    {
+      "identity" : "boringssl-swiftpm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/firebase/boringssl-SwiftPM.git",
+      "state" : {
+        "revision" : "734a8247442fde37df4364c21f6a0085b6a36728",
+        "version" : "0.7.2"
+      }
+    },
+    {
+      "identity" : "nearby",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/google/nearby",
+      "state" : {
+        "branch" : "main",
+        "revision" : "e37b501e37855f7c6b06e17fe460e6b3b2693982"
+      }
+    },
     {
       "identity" : "sumup-ios-sdk",
       "kind" : "remoteSourceControl",

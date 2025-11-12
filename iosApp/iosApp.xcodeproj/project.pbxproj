@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		21140CF22EA0359000490977 /* SumUpSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 21140CF12EA0359000490977 /* SumUpSDK */; };
+		21897BF82EC4FDAB001CBDAD /* NearbyConnections in Frameworks */ = {isa = PBXBuildFile; productRef = 21897BF72EC4FDAB001CBDAD /* NearbyConnections */; };
+		21897BFA2EC4FDAB001CBDAD /* NearbyConnectionsDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 21897BF92EC4FDAB001CBDAD /* NearbyConnectionsDynamic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,7 +47,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21897BFA2EC4FDAB001CBDAD /* NearbyConnectionsDynamic in Frameworks */,
 				21140CF22EA0359000490977 /* SumUpSDK in Frameworks */,
+				21897BF82EC4FDAB001CBDAD /* NearbyConnections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,6 +95,8 @@
 			name = iosApp;
 			packageProductDependencies = (
 				21140CF12EA0359000490977 /* SumUpSDK */,
+				21897BF72EC4FDAB001CBDAD /* NearbyConnections */,
+				21897BF92EC4FDAB001CBDAD /* NearbyConnectionsDynamic */,
 			);
 			productName = iosApp;
 			productReference = B9DA97B12DC1472C00A4DA20 /* Torri.app */;
@@ -122,6 +128,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				21140CF02EA0359000490977 /* XCRemoteSwiftPackageReference "sumup-ios-sdk" */,
+				21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9DA97B22DC1472C00A4DA20 /* Products */;
@@ -307,6 +314,7 @@
 				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 254U69QY85;
 				ENABLE_PREVIEWS = YES;
@@ -330,6 +338,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.1;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -350,6 +359,7 @@
 				CODE_SIGN_ENTITLEMENTS = iosApp/iosApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				DEVELOPMENT_TEAM = 254U69QY85;
 				ENABLE_PREVIEWS = YES;
@@ -373,6 +383,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.1;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -415,6 +426,14 @@
 				kind = branch;
 			};
 		};
+		21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/nearby";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -422,6 +441,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 21140CF02EA0359000490977 /* XCRemoteSwiftPackageReference "sumup-ios-sdk" */;
 			productName = SumUpSDK;
+		};
+		21897BF72EC4FDAB001CBDAD /* NearbyConnections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */;
+			productName = NearbyConnections;
+		};
+		21897BF92EC4FDAB001CBDAD /* NearbyConnectionsDynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */;
+			productName = NearbyConnectionsDynamic;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
