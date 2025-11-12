@@ -7,10 +7,10 @@
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>SumUp requirement</string>
+	<string>To provide a secure payment service, we need to know your location.\nWithout location information, you cannot accept payments using this app.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>SumUp requirement for connection to terminal</string>
+	<string>The app needs to connect to Bluetooth peripherals to detect the SumUp Card Terminal correctly. Please confirm with \&quot;OK\&quot; as you cannot use your card reader otherwise.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>SumUp requirement</string>
+	<string>The app needs to connect to Bluetooth peripherals to detect the SumUp Card Terminal correctly. Please confirm with \&quot;OK\&quot; as you cannot use your card reader otherwise.</string>
 </dict>
 </plist>
