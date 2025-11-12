@@ -43,6 +43,7 @@ import fr.imacaron.torri.viewmodel.ServiceViewModel
 
 @Composable
 fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: ServiceViewModel, navController: NavController, priceListViewModel: PriceListViewModel, commandViewModel: CommandViewModel, portrait: Boolean) {
+	commandViewModel.loadService()
 	val service = serviceViewModel.currentService
 	if(service == null) {
 		return
@@ -97,10 +98,10 @@ fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, p
 				} else {
 					commandViewModel.command.forEach { (itemId, quantity) ->
 						Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-							Text(items.find { it.idItem == itemId }?.name ?: "Inconnu", style = MaterialTheme.typography.titleMedium)
-							Text("x$quantity", style = MaterialTheme.typography.titleMedium)
+							Text(items.find { it.idItem == itemId }?.name ?: "Inconnu", style = MaterialTheme.typography.titleLarge)
+							Text("x$quantity", style = MaterialTheme.typography.titleLarge)
 							Spacer(Modifier.weight(1f))
-							Text("${commandViewModel.prices[itemId]?.times(quantity)} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleSmall)
+							Text("${commandViewModel.prices[itemId]?.times(quantity)} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
 						}
 					}
 				}

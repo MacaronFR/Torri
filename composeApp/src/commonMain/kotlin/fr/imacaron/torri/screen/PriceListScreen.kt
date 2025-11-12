@@ -1,5 +1,6 @@
 package fr.imacaron.torri.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,16 +20,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Trash
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 
 @Composable
 fun PriceListScreen(priceList: PriceListViewModel, navController: NavController) {
 	Column(Modifier.padding(8.dp)) {
-		Text("Tarifs", style = MaterialTheme.typography.headlineSmall)
+		Text("Tarifs", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(16.dp))
 		LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 			items(priceList.priceLists) {
-				Card {
+				Card(Modifier.clickable { navController.navigate(Destination.PRICE_LIST_EDIT.routeWithArg("id" to it.priceList.idPriceList.toString())) }) {
 					Row(Modifier.padding(start = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
 						Text(it.priceList.name, style = MaterialTheme.typography.headlineSmall)
 						Text(it.priceList.currency, style = MaterialTheme.typography.bodySmall)

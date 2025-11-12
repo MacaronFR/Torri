@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
@@ -58,46 +59,58 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 	LaunchedEffect(reloadConfScreen) {
 		SumUp.isLogged
 	}
-	Column(Modifier.padding(8.dp)) {
-		Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-			Text(if(SumUp.isLogged) "SumUp ✔" else "SumUp")
-			if(SumUp.isLogged) {
-				Button({
-					SumUp.logout()
-					scope.launch {
-						dataStore.updateData {
-							it.toMutablePreferences().apply {
-								remove(sumupAccessToken)
-								remove(sumupRefreshToken)
-								remove(sumupExpire)
-							}
-						}
-					}
-					doReload()
-				}) {
-					Text("Se déconnecter de SumUp")
-					Icon(Lucide.LogOut, "Se déconnecter de SumUp")
+	Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+		Card(Modifier.fillMaxWidth()) {
+			Column(Modifier.padding(8.dp)) {
+				Text("Compte", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 8.dp))
+				if(username == null) {
+					Text("Chargement...")
+				}else {
+					Text("Nom d'utilisateur: $username")
 				}
-			} else {
-				Button({
-					scope.launch {
-						val newTokens = SumUp.fetchToken()
-						if(newTokens == null) {
-							snackBarState.showSnackbar("Impossible de se connecter")
-							return@launch
-						}
-						dataStore.updateData {
-							it.toMutablePreferences().apply {
-								set(sumupAccessToken, newTokens.access_token)
-								newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
-								newTokens.expires_in?.let { expiresIn -> set(sumupExpire, newTokens.received_at + expiresIn) }
+			}
+		}
+		Card(Modifier.fillMaxWidth()) {
+			Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+				Text(if(SumUp.isLogged) "SumUp ✔" else "SumUp", style = MaterialTheme.typography.headlineSmall)
+				if(SumUp.isLogged) {
+					Button({
+						SumUp.logout()
+						scope.launch {
+							dataStore.updateData {
+								it.toMutablePreferences().apply {
+									remove(sumupAccessToken)
+									remove(sumupRefreshToken)
+									remove(sumupExpire)
+								}
 							}
 						}
-						SumUp.login(newTokens.access_token)
+						doReload()
+					}) {
+						Text("Se déconnecter")
+						Icon(Lucide.LogOut, "Se déconnecter")
 					}
-				}) {
-					Text("Se connecter à SumUp")
-					Icon(Lucide.LogIn, "Se connecter à SumUp")
+				} else {
+					Button({
+						scope.launch {
+							val newTokens = SumUp.fetchToken()
+							if(newTokens == null) {
+								snackBarState.showSnackbar("Impossible de se connecter")
+								return@launch
+							}
+							dataStore.updateData {
+								it.toMutablePreferences().apply {
+									set(sumupAccessToken, newTokens.access_token)
+									newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
+									newTokens.expires_in?.let { expiresIn -> set(sumupExpire, newTokens.received_at + expiresIn) }
+								}
+							}
+							SumUp.login(newTokens.access_token)
+						}
+					}) {
+						Text("Se connecter")
+						Icon(Lucide.LogIn, "Se connecter")
+					}
 				}
 			}
 		}
@@ -108,15 +121,7 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				}
 			}
 		}
-		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-			Column {
-				Text("Compte")
-				if(username == null) {
-					Text("Chargement...")
-				}else {
-					Text("Nom d'utilisateur: $username")
-				}
-			}
+		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
 			Button({
 				scope.launch {
 					dataStore.updateData {

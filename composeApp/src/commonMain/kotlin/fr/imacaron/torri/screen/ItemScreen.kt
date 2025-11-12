@@ -2,6 +2,7 @@ package fr.imacaron.torri.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,15 +41,26 @@ import torri.composeapp.generated.resources.allDrawableResources
 fun ItemScreen(savedItems: SavedItemViewModel, priceListViewModel: PriceListViewModel, snackBarState: SnackbarHostState) {
 	val scope = rememberCoroutineScope()
 	var item by remember { mutableStateOf<ItemEntity?>(null) }
-	LazyColumn {
-		items(savedItems.items) {
-			Card(Modifier.padding(8.dp).fillMaxWidth()) {
-				Row(Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-					Image(painterResource(Res.allDrawableResources[it.image]!!), "Image de ${it.name}", Modifier.size(48.dp).padding(end = 8.dp))
-					Text(it.name, style = MaterialTheme.typography.headlineSmall)
-					Spacer(Modifier.weight(1f))
-					IconButton( { item = it }) {
-						Icon(Lucide.Minus, contentDescription = "Retirer un article")
+	Column {
+		Text("Produits", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(16.dp))
+		LazyColumn {
+			items(savedItems.items) {
+				Card(Modifier.padding(8.dp).fillMaxWidth()) {
+					Row(Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+						Image(painterResource(Res.allDrawableResources[it.image]!!), "Image de ${it.name}", Modifier.size(48.dp).padding(end = 8.dp))
+						Text(it.name, style = MaterialTheme.typography.headlineSmall)
+						Spacer(Modifier.weight(1f))
+						IconButton( {
+							if(priceListViewModel.priceLists.any { pl -> pl.items.any { i -> i.idItem == it.idItem } }) {
+								scope.launch {
+									snackBarState.showSnackbar("Ce produit est utilisé dans un tarif et ne peut pas être supprimé")
+								}
+							} else {
+								item = it
+							}
+						}) {
+							Icon(Lucide.Minus, contentDescription = "Retirer un article")
+						}
 					}
 				}
 			}
@@ -58,14 +70,8 @@ fun ItemScreen(savedItems: SavedItemViewModel, priceListViewModel: PriceListView
 		AlertDialog(
 			{ item = null },
 			{ TextButton({
-				if(priceListViewModel.priceLists.any { pl -> pl.items.any { i -> i.idItem == item?.idItem } }) {
-					scope.launch {
-						snackBarState.showSnackbar("Ce produit est utilisé dans un tarif et ne peut pas être supprimé")
-					}
-				} else {
-					savedItems.remove(item!!)
-					item = null
-				}
+				savedItems.remove(item!!)
+				item = null
 			}) { Text("Supprimer") } },
 			dismissButton = { TextButton({ item = null }) { Text("Annuler") } },
 			title = { Text("Supprimer l'article") },

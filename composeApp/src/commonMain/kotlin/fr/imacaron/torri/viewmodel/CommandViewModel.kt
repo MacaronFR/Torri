@@ -64,6 +64,8 @@ class CommandViewModel(
 		command[item.idPriceListItem]?.let {
 			if(it > 0) {
 				command[item.idPriceListItem] = it -1
+			} else {
+				command.remove(item.idPriceListItem)
 			}
 		}
 	}
