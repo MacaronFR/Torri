@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,14 +29,27 @@ import fr.imacaron.torri.viewmodel.ServiceViewModel
 fun ServiceAddScreen(priceListViewModel: PriceListViewModel, serviceViewModel: ServiceViewModel, navController: NavController) {
 	Column(Modifier.padding(8.dp)) {
 		Text("Nouveau service", style = MaterialTheme.typography.headlineSmall)
-		LazyColumn {
+		LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 			items(priceListViewModel.priceLists) {
-				Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable {
-					serviceViewModel.create(it.priceList.idPriceList)
-					navController.navigate(Destination.SERVICE_COMMAND.route) { popUpTo(Destination.SERVICE.route) { inclusive = false  } }
-				}.padding(16.dp, 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-					Text("${it.priceList.name} (${it.priceList.currency})", style = MaterialTheme.typography.titleLarge)
-					Icon(Lucide.ChevronRight, "Sélectionner")
+				Card {
+					Row(
+						Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).clickable {
+							serviceViewModel.create(it.priceList.idPriceList)
+							navController.navigate(Destination.SERVICE_COMMAND.route) {
+								popUpTo(Destination.SERVICE.route) {
+									inclusive = false
+								}
+							}
+						}.padding(16.dp, 8.dp),
+						horizontalArrangement = Arrangement.SpaceBetween,
+						verticalAlignment = Alignment.CenterVertically
+					) {
+						Text(
+							"${it.priceList.name} (${it.priceList.currency})",
+							style = MaterialTheme.typography.titleLarge
+						)
+						Icon(Lucide.ChevronRight, "Sélectionner")
+					}
 				}
 			}
 		}

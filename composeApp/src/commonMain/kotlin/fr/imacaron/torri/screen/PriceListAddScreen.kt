@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
@@ -63,14 +65,14 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 				OutlinedTextField(currency, { currency = it }, label = { Text("Devise") })
 			}
 			Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-				TextButton({
+				Button({
 					priceList.create(name, currency, items.toList())
 					navController.popBackStack()
 					name = ""
 					currency = ""
 					items.clear()
 					addItemDialog = false
-				}) { Text("Sauvegarder") }
+				}, enabled = name.isNotEmpty() && currency.isNotEmpty()) { Text("Sauvegarder") }
 			}
 		}
 		Card(Modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
@@ -81,6 +83,9 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 				}
 			}
 			Column(Modifier.padding(16.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
+				if(items.isEmpty()) {
+					Text("Aucun produit", Modifier.padding(16.dp).fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+				}
 				items.forEach { item ->
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
 					Row {

@@ -1,5 +1,6 @@
 package fr.imacaron.torri.components
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,7 +43,12 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dat
 		destination.route?.let { currentRoute = it }
 	}
 	TopAppBar(
-		{ Text("Torri") },
+		{
+			Row {
+				Text("T", color = MaterialTheme.colorScheme.primary)
+				Text("orri", color = MaterialTheme.colorScheme.onBackground)
+			}
+		},
 		actions = {
 			when(currentRoute) {
 				Destination.SERVICE_COMMAND.route -> {

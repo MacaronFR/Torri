@@ -13,6 +13,11 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 	val priceLists = mutableStateListOf<PriceListWithItem>()
 
 	init {
+		loadPriceLists()
+	}
+
+	fun loadPriceLists() {
+		priceLists.clear()
 		viewModelScope.launch {
 			priceLists.addAll(db.priceListDao().getAll())
 		}
@@ -61,6 +66,7 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 				}
 			}
 		}
+		loadPriceLists()
 	}
 
 	fun delete(priceList: PriceListEntity) {
