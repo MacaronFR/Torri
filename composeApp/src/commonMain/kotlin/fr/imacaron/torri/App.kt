@@ -30,6 +30,7 @@ import com.composables.icons.lucide.Command
 import com.composables.icons.lucide.DollarSign
 import com.composables.icons.lucide.Inbox
 import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.SquareMenu
 import fr.imacaron.torri.components.AppBar
 import fr.imacaron.torri.components.BottomBar
 import fr.imacaron.torri.components.FAB
@@ -69,9 +70,9 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
     SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
     SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
     SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
-    PRICE_LIST("pricelist", "Tarifs", Lucide.DollarSign),
-    PRICE_LIST_ADD("pricelist/add", "Ajouter un tarif", Lucide.DollarSign),
-    PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier un tarif", Lucide.DollarSign),
+    PRICE_LIST("pricelist", "Cartes", Lucide.SquareMenu),
+    PRICE_LIST_ADD("pricelist/add", "Ajouter une carte", Lucide.SquareMenu),
+    PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier une carte", Lucide.SquareMenu),
     ITEMS("items", "Produits", Lucide.Inbox),
     ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
     CONF("conf", "Configuration", Lucide.Cog),
@@ -156,14 +157,14 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     val displaySidePanel = windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.EXPANDED)
-    val cols = when(windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> 2
-        WindowWidthSizeClass.MEDIUM -> 3
-        WindowWidthSizeClass.EXPANDED -> 3
-        else -> 2
-    }
     val portrait = LocalWindowInfo.current.containerSize.let {
         it.width < it.height
+    }
+    val cols = when(windowSizeClass.windowWidthSizeClass) {
+        WindowWidthSizeClass.COMPACT -> 2
+        WindowWidthSizeClass.MEDIUM -> if(portrait) 4 else 3
+        WindowWidthSizeClass.EXPANDED -> if(portrait) 5 else 4
+        else -> 2
     }
     val navigationController = rememberNavController()
     SumUp.snackBarState = snackBarState
@@ -195,7 +196,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                     }
                     NavHost(
                         navigationController,
-                        startDestination = if(savedItems.items.isNotEmpty()) Destination.ITEMS.route else if(priceList.priceLists.isEmpty()) Destination.PRICE_LIST.route else Destination.SERVICE.route,
+                        startDestination = if(savedItems.items.isEmpty()) Destination.ITEMS.route else if(priceList.priceLists.isEmpty()) Destination.PRICE_LIST.route else Destination.SERVICE.route,
                     ) {
                         composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
                         composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
@@ -215,7 +216,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             } ?: 0L
                             PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState)
                         }
-                        composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState) }
+                        composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
                         composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, { reloadConfScreen = !reloadConfScreen}) }
                     }

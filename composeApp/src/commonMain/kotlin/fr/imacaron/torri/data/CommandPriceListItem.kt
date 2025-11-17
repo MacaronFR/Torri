@@ -35,5 +35,5 @@ data class CommandPriceListItemsWithPriceListItem(
 	@Relation(
 		parentColumn = "idPriceListItem",
 		entityColumn = "idPriceListItem"
-	) val priceListItem: PriceListItemEntity
+	) val priceListItem: PriceListItemEntity?
 )

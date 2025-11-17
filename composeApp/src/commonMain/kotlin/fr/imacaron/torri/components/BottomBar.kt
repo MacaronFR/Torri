@@ -24,7 +24,7 @@ fun BottomBar(navController: NavController) {
 			NavigationBarItem(
 				selected = currentRoute == dest.route,
 				onClick = { navController.navigate(dest.route) { popUpTo(Destination.SERVICE.route) { inclusive = true } } },
-				icon = { Icon(dest.icon, contentDescription = "Icone de ${dest.label}") },
+				icon = { Icon(dest.icon, contentDescription = dest.label) },
 				label = { Text(dest.label) }
 			)
 		}

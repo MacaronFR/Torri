@@ -49,21 +49,38 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 				db.priceListDao().updatePriceList(newPriceList)
 				priceLists.clear()
 				priceLists.addAll(db.priceListDao().getAll())
-				priceLists.find { it.priceList.idPriceList == id }?.let { updatedPriceList ->
-					val itemsId = updatedPriceList.items.map { it.idItem }
-					items.forEach { item ->
-						if(item.idItem !in itemsId) {
-							db.priceListItemDao().insert(item)
-						}
-					}
-					val newItemsId = items.map { it.idItem }
-					val priceListItems = getPriceListItems(updatedPriceList.priceList)
-					itemsId.forEach { oldItemId ->
-						if(oldItemId !in newItemsId) {
-							db.priceListItemDao().delete(priceListItems.find { it.idItem == oldItemId }!!)
-						}
+				val oldItems = db.priceListItemDao().getAlByPriceList(id)
+				val oldItemsId = oldItems.map { it.idPriceListItem }
+				val newItemsId = items.map { it.idPriceListItem }
+				items.forEach { newItem ->
+					if(newItem.idPriceListItem !in oldItemsId) {
+						db.priceListItemDao().insert(newItem)
+					} else {
+						val updatedItem = PriceListItemEntity(newItem.idPriceListItem, newItem.idItem, newItem.price, id)
+						db.priceListItemDao().update(updatedItem)
 					}
 				}
+				oldItems.forEach { oldItem ->
+					if(oldItem.idPriceListItem !in newItemsId) {
+						db.priceListItemDao().delete(oldItem)
+					}
+				}
+//				priceLists.find { it.priceList.idPriceList == id }?.let { updatedPriceList ->
+//
+//					val itemsId = updatedPriceList.items.map { it.idItem }
+//					items.forEach { item ->
+//						if(item.idItem !in itemsId) {
+//							db.priceListItemDao().insert(item)
+//						}
+//					}
+//					val newItemsId = items.map { it.idItem }
+//					val priceListItems = getPriceListItems(updatedPriceList.priceList)
+//					itemsId.forEach { oldItemId ->
+//						if(oldItemId !in newItemsId) {
+//							db.priceListItemDao().delete(priceListItems.find { it.idItem == oldItemId }!!)
+//						}
+//					}
+//				}
 			}
 		}
 		loadPriceLists()

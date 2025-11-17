@@ -13,6 +13,9 @@ interface CommandDao {
 
 	@Query("SELECT * FROM CommandEntity WHERE idService = :idService")
 	suspend fun getByService(idService: Long): List<CommandEntity>
+
+	@Query("DELETE FROM CommandEntity WHERE idCommand = :idCommand")
+	suspend fun delete(idCommand: Long): Int
 }
 
 @Entity

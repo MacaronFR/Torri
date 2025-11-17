@@ -27,7 +27,7 @@ import fr.imacaron.torri.viewmodel.PriceListViewModel
 @Composable
 fun PriceListScreen(priceList: PriceListViewModel, navController: NavController) {
 	Column(Modifier.padding(8.dp)) {
-		Text("Tarifs", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(16.dp))
+		Text("Cartes", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(16.dp))
 		LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 			items(priceList.priceLists) {
 				Card(Modifier.clickable { navController.navigate(Destination.PRICE_LIST_EDIT.routeWithArg("id" to it.priceList.idPriceList.toString())) }) {
@@ -36,7 +36,7 @@ fun PriceListScreen(priceList: PriceListViewModel, navController: NavController)
 						Text(it.priceList.currency, style = MaterialTheme.typography.bodySmall)
 						Spacer(Modifier.weight(1f))
 						IconButton( { navController.navigate(Destination.PRICE_LIST_EDIT.routeWithArg("id" to it.priceList.idPriceList.toString())) } ) {
-							Icon(Lucide.Pencil, "Éditer le tarif ${it.priceList.name}")
+							Icon(Lucide.Pencil, "Éditer la carte ${it.priceList.name}")
 						}
 					}
 				}

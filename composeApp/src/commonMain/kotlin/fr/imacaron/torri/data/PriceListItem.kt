@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface PriceListItemDao {
@@ -18,6 +19,9 @@ interface PriceListItemDao {
 	@Query("SELECT * FROM PriceListItemEntity WHERE idPriceList = :idPriceList")
 	suspend fun getAlByPriceList(idPriceList: Long): List<PriceListItemEntity>
 
+	@Update
+	suspend fun update(priceListItem: PriceListItemEntity): Int
+
 	@Delete
 	suspend fun delete(priceListItem: PriceListItemEntity): Int
 }
@@ -25,7 +29,7 @@ interface PriceListItemDao {
 @Entity
 data class PriceListItemEntity(
 	@PrimaryKey(autoGenerate = true) val idPriceListItem: Long = 0L,
-	val idItem: Long,
-	val price: Double,
+	var idItem: Long,
+	var price: Double,
 	var idPriceList: Long
 )

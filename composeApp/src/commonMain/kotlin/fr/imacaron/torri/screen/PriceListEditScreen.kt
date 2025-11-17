@@ -45,8 +45,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
+import com.composables.icons.lucide.Pen
+import com.composables.icons.lucide.Pencil
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Trash
+import fr.imacaron.torri.components.AddEditItemInPriceListDialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.viewmodel.PriceListViewModel
@@ -71,15 +74,16 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 		}
 	}
 	var addItemDialog by remember { mutableStateOf(false) }
+	var editItem by remember { mutableStateOf<PriceListItemEntity?>(null) }
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Card(Modifier.padding(top = 4.dp, start = 4.dp, end = 4.dp).fillMaxWidth()) {
 			Row(Modifier.padding(horizontal = 4.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-				Text("Modifier un tarif", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
+				Text("Modifier une carte", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
 				IconButton( {
 					priceList?.let {
 						if(serviceViewModel.currentService?.idPriceList == it.priceList.idPriceList || serviceViewModel.services.any { service -> service.idPriceList == it.priceList.idPriceList}) {
 							scope.launch {
-								snackBarState.showSnackbar("Impossible de supprimer ce tarif. Il est actuellement utilisé dans un service actuel ou terminé")
+								snackBarState.showSnackbar("Impossible de supprimer cette carte. Il est actuellement utilisé dans un service actuel ou terminé")
 							}
 						} else {
 							priceListViewModel.delete(priceList.priceList)
@@ -87,7 +91,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 						}
 					}
 				}) {
-					Icon(Lucide.Trash, contentDescription = "Supprimer ce tarif")
+					Icon(Lucide.Trash, contentDescription = "Supprimer cette carte")
 				}
 			}
 			Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
@@ -117,15 +121,29 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 				}
 				items.forEach { item ->
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
-					Row {
+					Row(verticalAlignment = Alignment.CenterVertically) {
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
 						Text("${itemEntity?.name}: ${item.price} $currency")
 						Spacer(Modifier.weight(1f))
+						IconButton({ editItem = item }) {
+							Icon(Lucide.Pencil, contentDescription = "Modifier un produit")
+						}
 						IconButton({ items.remove(item) }) {
 							Icon(Lucide.Minus, contentDescription = "Retirer un produit")
 						}
 					}
 				}
+			}
+		}
+	}
+	if(editItem != null) {
+		AddEditItemInPriceListDialog( { editItem = null }, savedItems, editItem?.price?.toString() ?: "", editItem?.let { ei -> savedItems.items.find { it.idItem == ei.idItem }}) { price, selectedItem ->
+			if(priceList != null) {
+				items.find { it.idPriceListItem == editItem?.idPriceListItem }?.let {
+					it.price = price
+					it.idItem = selectedItem.idItem
+				}
+				editItem = null
 			}
 		}
 	}

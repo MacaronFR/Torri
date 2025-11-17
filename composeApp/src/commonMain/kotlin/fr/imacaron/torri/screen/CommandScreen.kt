@@ -2,6 +2,8 @@ package fr.imacaron.torri.screen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -62,12 +65,12 @@ fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: Servic
 	if(displaySidePanel) {
 		if(portrait) {
 			Column(Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(2f))
+				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(3f))
 				CommandDetail(commandViewModel, items, priceList, prices, portrait, displaySidePanel, Modifier.weight(1f))
 			}
 		} else {
 			Row(Modifier.padding(4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(1f))
+				ItemSelection(cols, items, prices, priceList, commandViewModel, Modifier.weight(3f))
 				CommandDetail(commandViewModel, items, priceList, prices, portrait, displaySidePanel, Modifier.weight(1f))
 			}
 		}
@@ -92,14 +95,14 @@ fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, p
 			Text("Total ${commandViewModel.totalPrice}€", style = MaterialTheme.typography.headlineSmall)
 		}
 		if(displaySidePanel || expand) {
-			Column(Modifier.weight(1f)) {
+			Column(Modifier.weight(1f).scrollable(rememberScrollState(), Orientation.Vertical)) {
 				if(commandViewModel.command.isEmpty()) {
 					Text("Aucun article")
 				} else {
 					commandViewModel.command.forEach { (itemId, quantity) ->
 						Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+							Text("$quantity", style = MaterialTheme.typography.titleLarge)
 							Text(items.find { it.idItem == itemId }?.name ?: "Inconnu", style = MaterialTheme.typography.titleLarge)
-							Text("x$quantity", style = MaterialTheme.typography.titleLarge)
 							Spacer(Modifier.weight(1f))
 							Text("${commandViewModel.prices[itemId]?.times(quantity)} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
 						}

@@ -26,7 +26,7 @@ fun ServiceItem(service: ServiceEntity, priceList: PriceListWithItem, delete: ()
 		Row(Modifier.padding(16.dp, 8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
 			Column {
 				Text("Service du ${service.date.day}/${service.date.month.number}/${service.date.year}")
-				Text("Tarif ${priceList.priceList.name} en ${priceList.priceList.currency}")
+				Text("Carte ${priceList.priceList.name} en ${priceList.priceList.currency}")
 			}
 			IconButton(delete) {
 				Icon(Lucide.Trash, "Supprimer le service")

@@ -62,12 +62,20 @@ class CommandViewModel(
 
 	fun remove(item: PriceListItemEntity) {
 		command[item.idPriceListItem]?.let {
-			if(it > 0) {
-				command[item.idPriceListItem] = it -1
+			if(it > 1) {
+				command[item.idPriceListItem] = it - 1
 			} else {
 				command.remove(item.idPriceListItem)
 			}
 		}
+	}
+
+	fun removeFromHistory(command: CommandEntity) {
+		history.remove(command)
+		viewModelScope.launch {
+			db.commandDao().delete(command.idCommand)
+		}
+
 	}
 
 	fun pay(method: String) {

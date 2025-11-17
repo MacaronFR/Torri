@@ -86,14 +86,9 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dat
 						Icon(Lucide.Save, "Exporter le service en CSV", tint = MaterialTheme.colorScheme.primary)
 					}
 				}
-				Destination.ITEMS.route -> {
-					IconButton( { navController.navigate(Destination.ITEMS_ADD.route) }) {
-						Icon(Lucide.Plus, contentDescription = "Ajouter un produit", tint = MaterialTheme.colorScheme.primary)
-					}
-				}
 				Destination.PRICE_LIST.route -> {
 					IconButton( { navController.navigate(Destination.PRICE_LIST_ADD.route) }) {
-						Icon(Lucide.Plus, contentDescription = "Ajouter un tarif", tint = MaterialTheme.colorScheme.primary)
+						Icon(Lucide.Plus, contentDescription = "Ajouter une carte", tint = MaterialTheme.colorScheme.primary)
 					}
 				}
 			}

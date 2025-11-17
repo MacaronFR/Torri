@@ -43,6 +43,7 @@ import androidx.navigation.NavController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
+import fr.imacaron.torri.components.AddEditItemInPriceListDialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.viewmodel.PriceListViewModel
@@ -59,7 +60,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 	var addItemDialog by remember { mutableStateOf(false) }
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Card(Modifier.padding(top = 4.dp, start = 4.dp, end = 4.dp).fillMaxWidth()) {
-			Text("Ajouter un tarif", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
+			Text("Ajouter une carte", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
 			Column(Modifier.padding(horizontal = 16.dp).fillMaxWidth()) {
 				OutlinedTextField(name, { name = it }, label = { Text("Nom") })
 				OutlinedTextField(currency, { currency = it }, label = { Text("Devise") })
@@ -88,7 +89,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 				}
 				items.forEach { item ->
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
-					Row {
+					Row(verticalAlignment = Alignment.CenterVertically) {
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
 						Text("${itemEntity?.name}: ${item.price} $currency")
 						Spacer(Modifier.weight(1f))

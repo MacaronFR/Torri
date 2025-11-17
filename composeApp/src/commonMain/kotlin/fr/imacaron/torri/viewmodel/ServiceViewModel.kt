@@ -69,7 +69,11 @@ class ServiceViewModel(private val db: AppDataBase, private val commandViewModel
 		val commands = loadServiceCommand(service)
 		val csv = commands.map { command ->
 			commandViewModel.loadCommandDetail(command).joinToString("\n") {
-				"${command.idCommand}${itemViewModel.items.find { i -> i.idItem == it.priceListItem.idItem }?.name};${it.commandPriceListItem.quantity};${it.priceListItem.price * it.commandPriceListItem.quantity};${command.payementMethod}"
+				if(it.priceListItem == null) {
+					"${command.idCommand};Article inconnu;${it.commandPriceListItem.quantity};Prix inconnu;${command.payementMethod}"
+				} else {
+					"${command.idCommand};${itemViewModel.items.find { i -> i.idItem == it.priceListItem.idItem }?.name};${it.commandPriceListItem.quantity};${it.priceListItem.price * it.commandPriceListItem.quantity};${command.payementMethod}"
+				}
 			}
 		}.joinToString("\n")
 		return "ID;Article;Quantité;Prix;Méthode de paiement\n$csv"
