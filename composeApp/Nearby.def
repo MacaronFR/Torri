@@ -1,0 +1,3 @@
+language = Objective-C
+headers = NearbySwift.h
+package = fr.imacaron.torri.ios

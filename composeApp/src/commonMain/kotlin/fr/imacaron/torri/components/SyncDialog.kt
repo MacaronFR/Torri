@@ -97,7 +97,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 							}
 						}
 					}
-					if (nearby.discovering) {
+					if (nearby.discovering && nearby.connecting == null && nearby.connected == null) {
 						if (nearby.discoveredDevices.isEmpty()) {
 							Text("Aucun appareil détecté")
 						} else {

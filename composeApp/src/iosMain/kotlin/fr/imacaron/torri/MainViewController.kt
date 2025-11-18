@@ -1,6 +1,7 @@
 package fr.imacaron.torri
 
 import androidx.compose.ui.window.ComposeUIViewController
+import fr.imacaron.torri.data.getDatabaseBuilder
 import fr.imacaron.torri.data.getRoomDataBase
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
@@ -36,7 +37,7 @@ val client = HttpClient(Darwin) {
 
 @Suppress("unused", "FunctionName")
 fun MainViewController() = ComposeUIViewController {
-    App(getRoomDataBase(getDatabaseBuilder()), dataStore, client = client)
+    App(getRoomDataBase(getDatabaseBuilder()), dataStore, client = client, nearby = Nearbyios())
 }.apply {
     SumUp.viewController = this
 }

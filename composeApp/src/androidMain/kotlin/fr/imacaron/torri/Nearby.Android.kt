@@ -93,7 +93,6 @@ class NearbyAndroid(
 			.addOnFailureListener {
 				it.printStackTrace()
 			}
-		stopDiscovery()
 	}
 
 	override fun disconnect() {
@@ -102,6 +101,8 @@ class NearbyAndroid(
 		connected = null
 		discovering = false
 		advertising = false
+		stopDiscovery()
+		stopAdvertising()
 	}
 
 	override fun sendData(data: ByteArray) {
@@ -133,18 +134,16 @@ class NearbyAndroid(
 	private inner class Callback: ConnectionLifecycleCallback() {
 		override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
 			connecting = Device(connectionInfo.endpointName, endpointId)
-			stopDiscovery()
-			stopAdvertising()
 			GoogleNearby.getConnectionsClient(activity).acceptConnection(endpointId, InputCallback())
 		}
 
 		override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
-			stopDiscovery()
-			stopAdvertising()
 			when(result.status.statusCode) {
 				ConnectionsStatusCodes.STATUS_OK -> {
 					connected = connecting
 					connecting = null
+					stopDiscovery()
+					stopAdvertising()
 				}
 				ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
 					connected = null
@@ -166,8 +165,8 @@ class NearbyAndroid(
 		override fun onDisconnected(endpointId: String) {
 			connected = null
 			connecting = null
-			discovering = false
-			advertising = false
+			stopDiscovery()
+			stopAdvertising()
 		}
 	}
 

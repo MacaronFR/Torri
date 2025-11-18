@@ -1,8 +1,7 @@
-package fr.imacaron.torri
+package fr.imacaron.torri.data
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import fr.imacaron.torri.data.AppDataBase
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
@@ -11,6 +10,15 @@ import platform.Foundation.NSUserDomainMask
 fun getDatabaseBuilder(): RoomDatabase.Builder<AppDataBase> {
     val dbFilePath = documentDirectory() + "/torri_room.db"
     return Room.databaseBuilder<AppDataBase>(dbFilePath)
+}
+
+actual suspend fun exportDatabaseToFile(data: String) {
+    // TODO
+}
+
+actual suspend fun importDatabaseFromFile(): Result<String> {
+    // TODO
+    return Result.success("")
 }
 
 @OptIn(ExperimentalForeignApi::class)

@@ -1,67 +1,99 @@
-//
-// Created by Macaron on 23/10/2025.
-//
-
 import Foundation
 import NearbyConnections
 
-@objc class NearbySwift: NSObject {
+@objc(NearbySwift) class NearbySwift: NSObject {
     let connectionManager: ConnectionManager
-    let advertiser: Advertiser
-    let discoverer: Discoverer
+    var advertiser: Advertiser?
+    var discoverer: Discoverer?
+    var name = "Iphone"
 
-    @objc init() {
+    @objc public var onDiscoverDevice: (String, String) -> Void = { (p1, p2) -> Void in }
+    @objc public var onDeviceLost: (String) -> Void = { (p1) -> Void in }
+    @objc public var onConnectionStateChange: (String, String) -> Void = { (p1, p2) -> Void in }
+
+    @objc override init() {
         connectionManager = ConnectionManager(serviceID: "fr.imacaron.torri", strategy: .pointToPoint)
+        super.init()
         connectionManager.delegate = self
     }
 
-    @objc func startAdvertising() {
+    @objc public func startAdvertising() {
         advertiser = Advertiser(connectionManager: connectionManager)
-        advertiser.delegate = self
-        advertiser.startAdvertising(using: "IPhone".data(using: .utf8))
+        advertiser?.delegate = self
+        advertiser?.startAdvertising(using: "IPhone".data(using: .utf8)!)
     }
 
-    @objc func stopAdvertising() {
-        advertiser.stopAdvertising()
+    @objc public func stopAdvertising() {
+        advertiser?.stopAdvertising()
         advertiser = nil
     }
 
-    @objc func startDiscovery() {
+    @objc public func startDiscovery() {
         discoverer = Discoverer(connectionManager: connectionManager)
-        discoverer.delegate = self
-        discoverer.startDiscovery()
+        discoverer?.delegate = self
+        discoverer?.startDiscovery()
     }
 
-    @objc func stopDiscovery() {
-        discoverer.stopDiscovery()
+    @objc public func stopDiscovery() {
+        discoverer?.stopDiscovery()
         discoverer = nil
+    }
+
+    @objc public func connect(endpointId: EndpointID) {
+        discoverer?.requestConnection(to: endpointId, using: name.data(using: .utf8)!)
+    }
+
+    @objc public func disconnect(endpointId: EndpointID) {
+        do {
+            try connectionManager.disconnect(from: endpointId)
+        } catch {
+            print("\(error)")
+        }
+    }
+
+    @objc public func sendData(data: Data, endpointId: EndpointID) {
+        connectionManager.send(data, to: [endpointId])
+    }
+
+    private var data: Data? = nil
+    private var status: TransferUpdate = .failure
+
+    @objc public func receiveData() async throws -> Data? {
+        var success = false
+        while(!success) {
+            try await Task.sleep(for: .milliseconds(200))
+            switch status {
+            case .success:
+                success = true
+                break
+            default: continue
+            }
+        }
+        return data
     }
 }
 
-@objc extension NearbySwift: ConnectionManagerDelegate {
-    @objc func connectionManager(
+extension NearbySwift: ConnectionManagerDelegate {
+    func connectionManager(
         _ connectionManager: ConnectionManager, didReceive verificationCode: String,
         from endpointID: EndpointID, verificationHandler: @escaping (Bool) -> Void) {
-        // Optionally show the user the verification code. Your app should call this handler
-        // with a value of `true` if the nearby endpoint should be trusted, or `false`
-        // otherwise.
         verificationHandler(true)
     }
 
-    @objc func connectionManager(
+    func connectionManager(
         _ connectionManager: ConnectionManager, didReceive data: Data,
         withID payloadID: PayloadID, from endpointID: EndpointID) {
-        // A simple byte payload has been received. This will always include the full data.
+        self.data = data
     }
 
-    @objc func connectionManager(
+    func connectionManager(
         _ connectionManager: ConnectionManager, didReceive stream: InputStream,
         withID payloadID: PayloadID, from endpointID: EndpointID,
         cancellationToken token: CancellationToken) {
         // We have received a readable stream.
     }
 
-    @objc func connectionManager(
+    func connectionManager(
         _ connectionManager: ConnectionManager,
         didStartReceivingResourceWithID payloadID: PayloadID,
         from endpointID: EndpointID, at localURL: URL,
@@ -70,41 +102,41 @@ import NearbyConnections
         // event when complete.
     }
 
-    @objc func connectionManager(
+    func connectionManager(
         _ connectionManager: ConnectionManager,
         didReceiveTransferUpdate update: TransferUpdate,
         from endpointID: EndpointID, forPayload payloadID: PayloadID) {
-        // A success, failure, cancelation or progress update.
+        status = update
     }
 
-    @objc func connectionManager(
+    func connectionManager(
         _ connectionManager: ConnectionManager, didChangeTo state: ConnectionState,
         for endpointID: EndpointID) {
+        print(endpointID, state)
         switch state {
-        case .connecting: nil
-            // A connection to the remote endpoint is currently being established.
-        case .connected: nil
-            // We're connected! Can now start sending and receiving data.
-        case .disconnected: nil
-            // We've been disconnected from this endpoint. No more data can be sent or received.
-        case .rejected: nil
-            // The connection was rejected by one or both sides.
+        case .connecting: onConnectionStateChange("CONNECTING", endpointID)
+        case .connected: onConnectionStateChange("CONNECTED", endpointID)
+        case .disconnected: onConnectionStateChange("DISCONNECTED", endpointID)
+        case .rejected: onConnectionStateChange("REJECTED", endpointID)
         }
     }
 }
 
-@objc extension NearbySwift: AdvertiserDelegate {
-    @objc func advertiser(_ advertiser: Advertiser, didReceiveConnectionRequestFrom endpointID: EndpointID, with context: Data, connectionRequestHandler: @escaping (Bool) -> Void) {
+extension NearbySwift: AdvertiserDelegate {
+    func advertiser(_ advertiser: Advertiser, didReceiveConnectionRequestFrom endpointID: EndpointID, with context: Data, connectionRequestHandler: @escaping (Bool) -> Void) {
         connectionRequestHandler(true)
     }
 }
 
-@objc extension NearbySwift: DiscovererDelegate {
-    @objc func discoverer(_ discoverer: Discoverer, didFind endpointID: EndpointID, with context: Data) {
-
+extension NearbySwift: DiscovererDelegate {
+    func discoverer(_ discoverer: Discoverer, didFind endpointID: EndpointID, with context: Data) {
+        guard let endpointName = String(data: context, encoding: .utf8) else {
+            return
+        }
+        onDiscoverDevice(endpointID, endpointName)
     }
 
-    @objc func discoverer(_ discoverer: Discoverer, didLose endpointID: EndpointID) {
-
+    func discoverer(_ discoverer: Discoverer, didLose endpointID: EndpointID) {
+        onDeviceLost(endpointID)
     }
 }

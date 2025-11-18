@@ -9,7 +9,6 @@ plugins {
 	alias(libs.plugins.ksp)
 	alias(libs.plugins.room)
 	kotlin("plugin.serialization") version "2.1.20"
-	id("io.github.ttypic.swiftklib") version "0.6.4"
 }
 
 kotlin {
@@ -35,7 +34,10 @@ kotlin {
 				definitionFile.set(project.file("SumUpSDK.def"))
 				compilerOpts("-framework", "SumUpSDK", "-F/$rootDir/SumUpSDK.xcframework/ios-arm64_x86_64-simulator")
 			}
-			cinterops.create("NearbySwift")
+			cinterops.create("NearbySwift") {
+				definitionFile.set(file("Nearby.def"))
+				includeDirs.allHeaders(rootDir.resolve("iosApp/iosApp/bridge"))
+			}
 		}
 		iosTarget.binaries.all {
 			linkerOpts("-framework", "SumUpSDK", "-F/$rootDir/SumUpSDK.xcframework/ios-arm64_x86_64-simulator")
@@ -124,11 +126,4 @@ dependencies {
 
 room {
 	schemaDirectory("$projectDir/schemas")
-}
-
-swiftklib {
-	create("NearbySwift") {
-		path = file("../iosApp/iosApp/bridge")
-		packageName("fr.imacaron.torri.ios")
-	}
 }
