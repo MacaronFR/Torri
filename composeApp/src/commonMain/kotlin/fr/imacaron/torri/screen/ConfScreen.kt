@@ -74,18 +74,26 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 	Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Card(Modifier.fillMaxWidth()) {
 			Column(Modifier.padding(8.dp)) {
-				Text("Compte", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 8.dp))
-				if(username == null) {
+				Text(
+					"Compte",
+					style = MaterialTheme.typography.headlineSmall,
+					modifier = Modifier.padding(bottom = 8.dp)
+				)
+				if (username == null) {
 					Text("Chargement...")
-				}else {
+				} else {
 					Text("Nom d'utilisateur: $username")
 				}
 			}
 		}
 		Card(Modifier.fillMaxWidth()) {
-			Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-				Text(if(SumUp.isLogged) "SumUp ✔" else "SumUp", style = MaterialTheme.typography.headlineSmall)
-				if(SumUp.isLogged) {
+			Row(
+				Modifier.fillMaxWidth().padding(8.dp),
+				horizontalArrangement = Arrangement.SpaceBetween,
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				Text(if (SumUp.isLogged) "SumUp ✔" else "SumUp", style = MaterialTheme.typography.headlineSmall)
+				if (SumUp.isLogged) {
 					Button({
 						SumUp.logout()
 						scope.launch {
@@ -106,15 +114,25 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 					Button({
 						scope.launch {
 							val newTokens = SumUp.fetchToken()
-							if(newTokens == null) {
+							if (newTokens == null) {
 								snackBarState.showSnackbar("Impossible de se connecter")
 								return@launch
 							}
 							dataStore.updateData {
 								it.toMutablePreferences().apply {
 									set(sumupAccessToken, newTokens.access_token)
-									newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
-									newTokens.expires_in?.let { expiresIn -> set(sumupExpire, newTokens.received_at + expiresIn) }
+									newTokens.refresh_token?.let { refreshToken ->
+										set(
+											sumupRefreshToken,
+											refreshToken
+										)
+									}
+									newTokens.expires_in?.let { expiresIn ->
+										set(
+											sumupExpire,
+											newTokens.received_at + expiresIn
+										)
+									}
 								}
 							}
 							SumUp.login(newTokens.access_token)
@@ -126,14 +144,18 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				}
 			}
 		}
-		if(SumUp.isLogged) {
+		if (SumUp.isLogged) {
 			Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
 				Button({ SumUp.cardReaderPage() }) {
 					Text("Configuration du terminal")
 				}
 			}
 		}
-		Text("Synchronisation des données", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+		Text(
+			"Synchronisation des données",
+			style = MaterialTheme.typography.titleMedium,
+			modifier = Modifier.padding(top = 8.dp)
+		)
 		Card(Modifier.fillMaxWidth()) {
 			var syncDialog by remember { mutableStateOf(false) }
 			TextButton({
@@ -156,7 +178,10 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 						}
 					}.onFailure {
 						withContext(Dispatchers.Main) {
-							snackBarState.showSnackbar("Erreur lors de l'import: ${it.message}", duration = SnackbarDuration.Long)
+							snackBarState.showSnackbar(
+								"Erreur lors de l'import: ${it.message}",
+								duration = SnackbarDuration.Long
+							)
 						}
 					}
 				}
@@ -170,28 +195,35 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				syncDialog = false
 			}
 		}
-		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-			Column {
-				Text("Compte")
-				if(username == null) {
-					Text("Chargement...")
-				}else {
-					Text("Nom d'utilisateur: $username")
-				}
-			}
-		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-			Button({
-				scope.launch {
-					dataStore.updateData {
-						it.toMutablePreferences().apply {
-							remove(activated)
-							remove(clientKey)
+		Row(
+			Modifier.fillMaxWidth().padding(top = 8.dp),
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			Row(
+				Modifier.fillMaxWidth().padding(top = 8.dp),
+				horizontalArrangement = Arrangement.End,
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				Button(
+					{
+						scope.launch {
+							dataStore.updateData {
+								it.toMutablePreferences().apply {
+									remove(activated)
+									remove(clientKey)
+								}
+							}
 						}
-					}
+					},
+					colors = ButtonDefaults.buttonColors(
+						MaterialTheme.colorScheme.error,
+						MaterialTheme.colorScheme.onError
+					)
+				) {
+					Text("Se déconnecter")
+					Icon(Lucide.LogOut, "Se déconnecter")
 				}
-			}, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError)) {
-				Text("Se déconnecter")
-				Icon(Lucide.LogOut, "Se déconnecter")
 			}
 		}
 	}

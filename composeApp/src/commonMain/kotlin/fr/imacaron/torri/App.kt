@@ -170,7 +170,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     SumUp.snackBarState = snackBarState
     LaunchedEffect(reloadConfScreen) {
         savedItems.reload()
-        priceList.reload()
+        priceList.loadPriceLists()
         serviceViewModel.reload()
     }
     AppTheme {
