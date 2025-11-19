@@ -1,0 +1,3 @@
+language = Objective-C
+headers = OpenFile.h
+package = fr.imacaron.torri.ios.openfile

@@ -6,13 +6,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -31,16 +33,26 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.composables.icons.lucide.LogIn
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
+import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.activated
 import fr.imacaron.torri.clientKey
+import fr.imacaron.torri.components.SyncDialog
+import fr.imacaron.torri.data.AppDataBase
+import fr.imacaron.torri.data.exportDatabase
+import fr.imacaron.torri.data.exportDatabaseToFile
+import fr.imacaron.torri.data.importDatabase
+import fr.imacaron.torri.data.importDatabaseFromFile
 import fr.imacaron.torri.sumupAccessToken
 import fr.imacaron.torri.sumupExpire
 import fr.imacaron.torri.sumupRefreshToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit) {
+fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase) {
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
@@ -121,6 +133,52 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				}
 			}
 		}
+		Text("Synchronisation des données", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+		Card(Modifier.fillMaxWidth()) {
+			var syncDialog by remember { mutableStateOf(false) }
+			TextButton({
+				scope.launch(Dispatchers.IO) {
+					exportDatabaseToFile(exportDatabase(db))
+					withContext(Dispatchers.Default) {
+						snackBarState.showSnackbar("Export réussi")
+					}
+				}
+			}, Modifier.fillMaxWidth()) {
+				Text("Exporter les données", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+			}
+			TextButton({
+				scope.launch(Dispatchers.IO) {
+					importDatabaseFromFile().onSuccess {
+						importDatabase(it, db)
+						doReload()
+						withContext(Dispatchers.Main) {
+							snackBarState.showSnackbar("Import réussi")
+						}
+					}.onFailure {
+						withContext(Dispatchers.Main) {
+							snackBarState.showSnackbar("Erreur lors de l'import: ${it.message}", duration = SnackbarDuration.Long)
+						}
+					}
+				}
+			}, Modifier.fillMaxWidth()) {
+				Text("Importer des données", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+			}
+			TextButton({ syncDialog = true }, Modifier.fillMaxWidth()) {
+				Text("Synchroniser avec un autre appareil", Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+			}
+			SyncDialog(syncDialog, nearby, db, snackBarState, doReload) {
+				syncDialog = false
+			}
+		}
+		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+			Column {
+				Text("Compte")
+				if(username == null) {
+					Text("Chargement...")
+				}else {
+					Text("Nom d'utilisateur: $username")
+				}
+			}
 		Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
 			Button({
 				scope.launch {

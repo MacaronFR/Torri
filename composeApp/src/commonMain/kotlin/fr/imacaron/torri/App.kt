@@ -87,7 +87,7 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient) {
+fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient, nearby: Nearby) {
     var reloadConfScreen by remember { mutableStateOf(false) }
     val snackBarState = remember { SnackbarHostState() }
     SumUp.onLogin = { isLogged ->
@@ -168,6 +168,11 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     }
     val navigationController = rememberNavController()
     SumUp.snackBarState = snackBarState
+    LaunchedEffect(reloadConfScreen) {
+        savedItems.reload()
+        priceList.reload()
+        serviceViewModel.reload()
+    }
     AppTheme {
         if(loggedIn == false) {
             LoginScreen(dataStore, licenceRegistration)
@@ -218,7 +223,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
-                        composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, { reloadConfScreen = !reloadConfScreen}) }
+                        composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, { reloadConfScreen = !reloadConfScreen}, nearby, dataBase) }
                     }
                 }
             }

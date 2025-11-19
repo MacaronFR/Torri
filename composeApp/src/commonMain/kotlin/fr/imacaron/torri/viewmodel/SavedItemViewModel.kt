@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.ItemEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
@@ -15,7 +17,15 @@ class SavedItemViewModel(
 	val items = mutableStateListOf<ItemEntity>()
 
 	init {
-		viewModelScope.launch {
+		viewModelScope.launch(Dispatchers.IO) {
+			items.clear()
+			items.addAll(db.itemDao().getAll())
+		}
+	}
+
+	fun reload() {
+		viewModelScope.launch(Dispatchers.IO) {
+			items.clear()
 			items.addAll(db.itemDao().getAll())
 		}
 	}

@@ -7,6 +7,8 @@ import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.PriceListEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 
 class PriceListViewModel(private val db: AppDataBase): ViewModel() {

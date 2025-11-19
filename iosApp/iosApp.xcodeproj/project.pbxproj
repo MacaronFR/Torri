@@ -8,8 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		21140CF22EA0359000490977 /* SumUpSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 21140CF12EA0359000490977 /* SumUpSDK */; };
-		21897BF82EC4FDAB001CBDAD /* NearbyConnections in Frameworks */ = {isa = PBXBuildFile; productRef = 21897BF72EC4FDAB001CBDAD /* NearbyConnections */; };
-		21897BFA2EC4FDAB001CBDAD /* NearbyConnectionsDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = 21897BF92EC4FDAB001CBDAD /* NearbyConnectionsDynamic */; };
+		213CD0EA2ECC9AD100294934 /* NearbyConnections in Frameworks */ = {isa = PBXBuildFile; productRef = 213CD0E92ECC9AD100294934 /* NearbyConnections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,18 +48,26 @@
 			files = (
 				21897BFA2EC4FDAB001CBDAD /* NearbyConnectionsDynamic in Frameworks */,
 				21140CF22EA0359000490977 /* SumUpSDK in Frameworks */,
-				21897BF82EC4FDAB001CBDAD /* NearbyConnections in Frameworks */,
+				213CD0EA2ECC9AD100294934 /* NearbyConnections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		217A3A4F2ECC955A00CA42AD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B9DA97A82DC1472C00A4DA20 = {
 			isa = PBXGroup;
 			children = (
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
+				217A3A4F2ECC955A00CA42AD /* Frameworks */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -95,8 +102,7 @@
 			name = iosApp;
 			packageProductDependencies = (
 				21140CF12EA0359000490977 /* SumUpSDK */,
-				21897BF72EC4FDAB001CBDAD /* NearbyConnections */,
-				21897BF92EC4FDAB001CBDAD /* NearbyConnectionsDynamic */,
+				213CD0E92ECC9AD100294934 /* NearbyConnections */,
 			);
 			productName = iosApp;
 			productReference = B9DA97B12DC1472C00A4DA20 /* Torri.app */;
@@ -128,7 +134,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				21140CF02EA0359000490977 /* XCRemoteSwiftPackageReference "sumup-ios-sdk" */,
-				21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */,
+				213CD0E82ECC9AD100294934 /* XCRemoteSwiftPackageReference "nearby" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9DA97B22DC1472C00A4DA20 /* Products */;
@@ -426,7 +432,7 @@
 				kind = branch;
 			};
 		};
-		21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */ = {
+		213CD0E82ECC9AD100294934 /* XCRemoteSwiftPackageReference "nearby" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/nearby";
 			requirement = {
@@ -442,15 +448,10 @@
 			package = 21140CF02EA0359000490977 /* XCRemoteSwiftPackageReference "sumup-ios-sdk" */;
 			productName = SumUpSDK;
 		};
-		21897BF72EC4FDAB001CBDAD /* NearbyConnections */ = {
+		213CD0E92ECC9AD100294934 /* NearbyConnections */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */;
+			package = 213CD0E82ECC9AD100294934 /* XCRemoteSwiftPackageReference "nearby" */;
 			productName = NearbyConnections;
-		};
-		21897BF92EC4FDAB001CBDAD /* NearbyConnectionsDynamic */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 21897BF62EC4FDAB001CBDAD /* XCRemoteSwiftPackageReference "nearby" */;
-			productName = NearbyConnectionsDynamic;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

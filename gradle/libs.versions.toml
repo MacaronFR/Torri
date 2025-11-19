@@ -13,6 +13,7 @@ sqlite = "2.6.1"
 ksp = "2.2.0-2.0.2"
 ktor = "3.2.2"
 oidc = "0.15.1"
+nearby-version = "19.3.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
@@ -29,6 +30,7 @@ ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-conte
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
 oidc-ktor = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-ktor", version.ref = "oidc" }
+play-services-nearby-android = { group = "com.google.android.gms", name = "play-services-nearby", version.ref = "nearby-version" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

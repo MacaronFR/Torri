@@ -24,6 +24,10 @@ class ServiceViewModel(private val db: AppDataBase, private val commandViewModel
 		loadServices()
 	}
 
+	fun reload() {
+		loadServices()
+	}
+
 	private fun loadServices(): Job {
 		services.clear()
 		currentService = null

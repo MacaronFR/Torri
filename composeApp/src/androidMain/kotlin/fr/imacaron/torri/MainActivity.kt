@@ -1,27 +1,37 @@
 package fr.imacaron.torri
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.lifecycleScope
 import com.sumup.merchant.reader.api.SumUpAPI
 import com.sumup.merchant.reader.models.TransactionInfo
+import fr.imacaron.torri.data.getDatabaseBuilder
 import fr.imacaron.torri.data.getRoomDataBase
+import fr.imacaron.torri.data.mainActivity
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.tls.TLSConfigBuilder
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
+import org.publicvalue.multiplatform.oidc.appsupport.registerForActivityResultSuspend
 import java.security.KeyStore
 import java.security.cert.X509Certificate
 import javax.net.ssl.TrustManagerFactory
@@ -72,9 +82,12 @@ class MainActivity : ComponentActivity() {
 		}
 	}
 
+	private val nearby = NearbyAndroid(this)
+
 	@SuppressLint("SourceLockedOrientationActivity")
 	override fun onCreate(savedInstanceState: Bundle?) {
 		activity = this
+		mainActivity = this
 		(SumUp.codeAuthFlowFactory as AndroidCodeAuthFlowFactory).registerActivity(this)
 		enableEdgeToEdge()
 		if(resources.getBoolean(R.bool.force_portrait)) {
@@ -88,7 +101,7 @@ class MainActivity : ComponentActivity() {
 		SumUp.activity = this
 		SumUp.httpClient = client
 		setContent {
-			App(getRoomDataBase(getDatabaseBuilder(this)), dataStore, client = client)
+			App(getRoomDataBase(getDatabaseBuilder(this)), dataStore, client = client, nearby = nearby)
 		}
 	}
 
@@ -138,6 +151,44 @@ class MainActivity : ComponentActivity() {
 				data.amount,
 				data.status
 			))
+		}
+	}
+
+	private val permissionFlow = MutableStateFlow<Map<String, Boolean>?>(null)
+	val requestPermissionLauncherSuspend = registerForActivityResultSuspend(permissionFlow, ActivityResultContracts.RequestMultiplePermissions())
+
+	val openDocumentsFlow = MutableStateFlow<Uri?>(null)
+	val requestDocumentAccessLauncher = registerForActivityResultSuspend(openDocumentsFlow, ActivityResultContracts.OpenDocument())
+
+	val createDocumentFlow = MutableStateFlow<Uri?>(null)
+	val requestCreateFileLauncher = registerForActivityResultSuspend(createDocumentFlow, ActivityResultContracts.CreateDocument("application/json"))
+
+	private suspend fun requestPermission(permissions: List<String>): Boolean {
+		val notGranted = permissions.filter { ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED }
+		val toAsk = notGranted.filter { ActivityCompat.shouldShowRequestPermissionRationale(this, it) }
+		val toRequest = notGranted.filter { !ActivityCompat.shouldShowRequestPermissionRationale(this, it) }
+		requestPermissionLauncherSuspend.launch((toAsk + toRequest).toTypedArray())
+		val map = permissionFlow.first { it != null }
+		return map?.all { it.value } ?: false
+	}
+
+	suspend fun checkPermission(block: (granted: Boolean) -> Unit) {
+		if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+			block(requestPermission(listOf(
+				Manifest.permission.ACCESS_WIFI_STATE,
+				Manifest.permission.ACCESS_COARSE_LOCATION,
+				Manifest.permission.ACCESS_FINE_LOCATION
+			)))
+		} else {
+			block(requestPermission(listOf(
+				Manifest.permission.ACCESS_WIFI_STATE,
+				Manifest.permission.NEARBY_WIFI_DEVICES,
+				Manifest.permission.BLUETOOTH_ADVERTISE,
+				Manifest.permission.BLUETOOTH_SCAN,
+				Manifest.permission.ACCESS_COARSE_LOCATION,
+				Manifest.permission.ACCESS_FINE_LOCATION,
+				Manifest.permission.BLUETOOTH_CONNECT,
+			)))
 		}
 	}
 }
