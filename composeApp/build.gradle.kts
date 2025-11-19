@@ -96,8 +96,8 @@ android {
 		applicationId = "fr.imacaron.torri"
 		minSdk = libs.versions.android.minSdk.get().toInt()
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
-		versionCode = 9
-		versionName = "1.6.0"
+		versionCode = 10
+		versionName = "1.7.0"
 		addManifestPlaceholders(
 			mapOf("oidcRedirectScheme" to "fr.imacaron.torri")
 		)
