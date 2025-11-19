@@ -24,7 +24,6 @@ actual suspend fun exportDatabaseToFile(data: String) {
     OpenFile.shared.text = data
     OpenFile.shared.setOpenFileExport(true)
     OpenFile.shared.setOnResultSave {
-        println("Saved")
         channel.trySend(true)
     }
     channel.receive()

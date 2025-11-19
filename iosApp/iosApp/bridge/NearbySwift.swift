@@ -112,7 +112,6 @@ extension NearbySwift: ConnectionManagerDelegate {
     func connectionManager(
         _ connectionManager: ConnectionManager, didChangeTo state: ConnectionState,
         for endpointID: EndpointID) {
-        print(endpointID, state)
         switch state {
         case .connecting: onConnectionStateChange("CONNECTING", endpointID)
         case .connected: onConnectionStateChange("CONNECTED", endpointID)
