@@ -63,6 +63,7 @@ val clientKey = stringPreferencesKey("clientID")
 val sumupAccessToken = stringPreferencesKey("sumupAccessToken")
 val sumupRefreshToken = stringPreferencesKey("sumupRefreshToken")
 val sumupExpire = longPreferencesKey("sumupExpire")
+val demoInit = booleanPreferencesKey("demoInit")
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     SERVICE("service", "Service", Lucide.BookOpen),
@@ -121,11 +122,11 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     var loggedIn by remember { mutableStateOf<Boolean?>(null) }
     val licenceRegistration = LicenceRegistration(client)
     LaunchedEffect(dataStore) {
-        dataStore.data.collect {
-            if(it[activated] != true) {
+        dataStore.data.collect { d ->
+            if(d[activated] != true) {
                 loggedIn = false
             } else {
-                licenceRegistration.validate(it[clientKey] ?: "").onSuccess {
+                licenceRegistration.validate(d[clientKey] ?: "").onSuccess {
                     loggedIn = true
                 }.onFailure {
                     loggedIn = false
@@ -137,8 +138,8 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                     }
                 }
             }
-            if(it[sumupAccessToken] != null && !SumUp.isLogged) {
-                SumUp.login(it[sumupAccessToken]!!)
+            if(d[sumupAccessToken] != null && !SumUp.isLogged) {
+                SumUp.login(d[sumupAccessToken]!!)
             } else {
                 dataStore.updateData { pref ->
                     pref.toMutablePreferences().apply {
@@ -154,6 +155,16 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     val priceList = viewModel { PriceListViewModel(dataBase) }
     val commandViewModel = viewModel { CommandViewModel(dataBase) }
     val serviceViewModel = viewModel { ServiceViewModel(dataBase, commandViewModel, savedItems) }
+    LaunchedEffect(dataStore, loggedIn) {
+        dataStore.data.collect { d ->
+            if(loggedIn == true && d[clientKey] == "Apple" && d[demoInit] != true) {
+                dataStore.updateData {
+                    it.toMutablePreferences().apply { set(demoInit, true) }
+                }
+                createDataForDemo(savedItems, priceList, serviceViewModel)
+            }
+        }
+    }
     val displaySidePanel = windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
         WindowHeightSizeClass.EXPANDED)

@@ -7,6 +7,7 @@ import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.ItemEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
@@ -23,8 +24,8 @@ class SavedItemViewModel(
 		}
 	}
 
-	fun reload() {
-		viewModelScope.launch(Dispatchers.IO) {
+	fun reload(): Job {
+		return viewModelScope.launch(Dispatchers.IO) {
 			items.clear()
 			items.addAll(db.itemDao().getAll())
 		}

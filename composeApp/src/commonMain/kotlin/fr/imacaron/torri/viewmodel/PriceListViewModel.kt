@@ -9,6 +9,7 @@ import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class PriceListViewModel(private val db: AppDataBase): ViewModel() {
@@ -18,9 +19,9 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 		loadPriceLists()
 	}
 
-	fun loadPriceLists() {
+	fun loadPriceLists(): Job {
 		priceLists.clear()
-		viewModelScope.launch {
+		return viewModelScope.launch {
 			priceLists.addAll(db.priceListDao().getAll())
 		}
 	}
