@@ -38,6 +38,10 @@ kotlin {
 				definitionFile.set(file("Nearby.def"))
 				includeDirs.allHeaders(rootDir.resolve("iosApp/iosApp/bridge"))
 			}
+			cinterops.create("OpenFile") {
+				definitionFile.set(file("OpenFile.def"))
+				includeDirs.allHeaders(rootDir.resolve("iosApp/iosApp/bridge"))
+			}
 		}
 		iosTarget.binaries.all {
 			linkerOpts("-framework", "SumUpSDK", "-F/$rootDir/SumUpSDK.xcframework/ios-arm64_x86_64-simulator")
