@@ -53,7 +53,7 @@ kotlin {
 		androidMain.dependencies {
 			implementation(compose.preview)
 			implementation(libs.androidx.activity.compose)
-			implementation("com.sumup:merchant-sdk:4.2.0")
+			implementation(libs.merchant.sdk)
 			implementation(libs.play.services.nearby.android)
 		}
 		commonMain.dependencies {
@@ -72,13 +72,13 @@ kotlin {
 			implementation(libs.ktor.client.cio)
 			implementation(libs.ktor.client.content.negotiation)
 			implementation(libs.ktor.serialization.kotlinx.json)
-			implementation("com.composables:icons-lucide:1.0.0")
-			implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
-			implementation("androidx.datastore:datastore:1.1.7")
-			implementation("androidx.datastore:datastore-preferences:1.1.7")
-			implementation("org.jetbrains.compose.material3.adaptive:adaptive:1.1.2")
-			implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.0-beta03")
-			implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+			implementation(libs.icons.lucide)
+			implementation(libs.lifecycle.viewmodel.compose)
+			implementation(libs.datastore)
+			implementation(libs.datastore.preferences)
+			implementation(libs.adaptive)
+			implementation(libs.navigation.compose)
+			implementation(libs.kotlinx.datetime)
 			implementation(libs.oidc.appsupport)
 			implementation(libs.oidc.ktor)
 		}

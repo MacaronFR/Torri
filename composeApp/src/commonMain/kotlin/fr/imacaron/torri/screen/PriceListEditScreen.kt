@@ -52,6 +52,8 @@ import com.composables.icons.lucide.Trash
 import fr.imacaron.torri.components.AddEditItemInPriceListDialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
+import fr.imacaron.torri.formatPrice
+import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
@@ -62,7 +64,7 @@ import torri.composeapp.generated.resources.allDrawableResources
 import kotlin.collections.get
 
 @Composable
-fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: SavedItemViewModel, navController: NavController, id: Long, serviceViewModel: ServiceViewModel, snackBarState: SnackbarHostState) {
+fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: SavedItemViewModel, navController: NavController, id: Long, serviceViewModel: ServiceViewModel, snackBarState: SnackbarHostState, commandViewModel: CommandViewModel) {
 	val priceList = priceListViewModel.priceLists.find { it.priceList.idPriceList == id }
 	var name by remember { mutableStateOf(priceList?.priceList?.name ?: "") }
 	var currency by remember { mutableStateOf(priceList?.priceList?.currency ?: "") }
@@ -104,6 +106,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 						return@Button
 					}
 					priceListViewModel.update(priceList.priceList.idPriceList, name, currency, items.toList())
+					commandViewModel.loadService()
 					navController.popBackStack()
 				}, enabled = name.isNotEmpty() && currency.isNotEmpty()) { Text("Sauvegarder") }
 			}
@@ -123,7 +126,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
 					Row(verticalAlignment = Alignment.CenterVertically) {
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
-						Text("${itemEntity?.name}: ${item.price} $currency")
+						Text("${itemEntity?.name}: ${item.price.formatPrice()} $currency")
 						Spacer(Modifier.weight(1f))
 						IconButton({ editItem = item }) {
 							Icon(Lucide.Pencil, contentDescription = "Modifier un produit")

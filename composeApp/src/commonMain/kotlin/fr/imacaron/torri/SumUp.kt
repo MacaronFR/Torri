@@ -5,7 +5,7 @@ import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import kotlinx.coroutines.channels.Channel
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
-import org.publicvalue.multiplatform.oidc.appsupport.CodeAuthFlowFactory
+import org.publicvalue.multiplatform.oidc.flows.CodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.types.remote.AccessTokenResponse
 
 expect object SumUp {

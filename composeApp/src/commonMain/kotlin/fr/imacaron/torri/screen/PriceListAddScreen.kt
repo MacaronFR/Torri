@@ -46,6 +46,7 @@ import com.composables.icons.lucide.Plus
 import fr.imacaron.torri.components.AddEditItemInPriceListDialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
+import fr.imacaron.torri.formatPrice
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import org.jetbrains.compose.resources.painterResource
@@ -91,7 +92,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
 					Row(verticalAlignment = Alignment.CenterVertically) {
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
-						Text("${itemEntity?.name}: ${item.price} $currency")
+						Text("${itemEntity?.name}: ${item.price.formatPrice()} $currency")
 						Spacer(Modifier.weight(1f))
 						IconButton({ items.remove(item) }) {
 							Icon(Lucide.Minus, contentDescription = "Retirer un produit")

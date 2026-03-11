@@ -23,7 +23,6 @@ import androidx.navigation.NavController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Pencil
 import com.composables.icons.lucide.Plus
-import com.composables.icons.lucide.Trash
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 

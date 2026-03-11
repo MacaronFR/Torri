@@ -7,8 +7,6 @@ import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.PriceListEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -46,7 +44,7 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 	}
 
 	fun update(id: Long, name: String, currency: String, items: List<PriceListItemEntity>) {
-		priceLists.find { it.priceList.idPriceList == id }?.let { priceList ->
+		priceLists.find { it.priceList.idPriceList == id }?.let { _ ->
 			viewModelScope.launch {
 				val newPriceList = PriceListEntity(idPriceList = id, name = name, currency = currency)
 				db.priceListDao().updatePriceList(newPriceList)
@@ -68,9 +66,9 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 						db.priceListItemDao().delete(oldItem)
 					}
 				}
+				loadPriceLists()
 			}
 		}
-		loadPriceLists()
 	}
 
 	fun delete(priceList: PriceListEntity) {

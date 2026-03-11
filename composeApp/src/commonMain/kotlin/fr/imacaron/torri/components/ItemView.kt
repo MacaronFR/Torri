@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleMinus
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.data.ItemEntity
+import fr.imacaron.torri.formatPrice
 import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
@@ -37,7 +38,7 @@ fun ItemView(item: ItemEntity, price: Double, currency: String, add: () -> Unit,
 					Icon(Lucide.CircleMinus, contentDescription = "Retirer un article")
 				}
 				Spacer(Modifier.weight(1f))
-				Text("$price $currency", style = MaterialTheme.typography.headlineMedium)
+				Text("${price.formatPrice()} $currency", style = MaterialTheme.typography.headlineMedium)
 			}
 			Image(
 				painterResource(Res.allDrawableResources.getValue(item.image)),

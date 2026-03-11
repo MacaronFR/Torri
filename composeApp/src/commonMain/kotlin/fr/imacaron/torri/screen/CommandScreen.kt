@@ -40,6 +40,7 @@ import fr.imacaron.torri.components.PayementDialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
+import fr.imacaron.torri.formatPrice
 import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
@@ -92,7 +93,7 @@ fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, p
 			} else {
 				Text("${commandViewModel.totalItem} Article", style = MaterialTheme.typography.headlineSmall)
 			}
-			Text("Total ${commandViewModel.totalPrice}€", style = MaterialTheme.typography.headlineSmall)
+			Text("Total ${commandViewModel.totalPrice.formatPrice()}${priceList.priceList.currency}", style = MaterialTheme.typography.headlineSmall)
 		}
 		if(displaySidePanel || expand) {
 			Column(Modifier.weight(1f).scrollable(rememberScrollState(), Orientation.Vertical)) {
@@ -104,7 +105,7 @@ fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, p
 							Text("$quantity", style = MaterialTheme.typography.titleLarge)
 							Text(items.find { it.idItem == itemId }?.name ?: "Inconnu", style = MaterialTheme.typography.titleLarge)
 							Spacer(Modifier.weight(1f))
-							Text("${commandViewModel.prices[itemId]?.times(quantity)} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
+							Text("${commandViewModel.prices[itemId]?.times(quantity)?.formatPrice()} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
 						}
 					}
 				}

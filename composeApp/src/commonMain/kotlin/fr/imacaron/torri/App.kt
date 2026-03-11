@@ -27,7 +27,6 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.composables.icons.lucide.BookOpen
 import com.composables.icons.lucide.Cog
 import com.composables.icons.lucide.Command
-import com.composables.icons.lucide.DollarSign
 import com.composables.icons.lucide.Inbox
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.SquareMenu
@@ -165,17 +164,18 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
             }
         }
     }
-    val displaySidePanel = windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
-        WindowHeightSizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(WindowWidthSizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
-        WindowHeightSizeClass.EXPANDED)
+    val displaySidePanel = windowSizeClass.isWidthAtLeast(SizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
+        SizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(SizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
+        SizeClass.EXPANDED)
     val portrait = LocalWindowInfo.current.containerSize.let {
         it.width < it.height
     }
-    val cols = when(windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.COMPACT -> 2
-        WindowWidthSizeClass.MEDIUM -> if(portrait) 4 else 3
-        WindowWidthSizeClass.EXPANDED -> if(portrait) 5 else 4
-        else -> 2
+    val cols = if(windowSizeClass.isWidthAtLeast(SizeClass.EXPANDED)) {
+        if(portrait) 5 else 4
+    } else if(windowSizeClass.isWidthAtLeast(SizeClass.MEDIUM)) {
+        if(portrait) 4 else 3
+    } else {
+        2
     }
     val navigationController = rememberNavController()
     SumUp.snackBarState = snackBarState
@@ -225,7 +225,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             val id = backStackEntry.arguments?.read {
                                 this.getStringOrNull("id")?.toLongOrNull()
                             } ?: 0L
-                            PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState)
+                            PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState, commandViewModel)
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
