@@ -68,22 +68,6 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 						db.priceListItemDao().delete(oldItem)
 					}
 				}
-//				priceLists.find { it.priceList.idPriceList == id }?.let { updatedPriceList ->
-//
-//					val itemsId = updatedPriceList.items.map { it.idItem }
-//					items.forEach { item ->
-//						if(item.idItem !in itemsId) {
-//							db.priceListItemDao().insert(item)
-//						}
-//					}
-//					val newItemsId = items.map { it.idItem }
-//					val priceListItems = getPriceListItems(updatedPriceList.priceList)
-//					itemsId.forEach { oldItemId ->
-//						if(oldItemId !in newItemsId) {
-//							db.priceListItemDao().delete(priceListItems.find { it.idItem == oldItemId }!!)
-//						}
-//					}
-//				}
 			}
 		}
 		loadPriceLists()

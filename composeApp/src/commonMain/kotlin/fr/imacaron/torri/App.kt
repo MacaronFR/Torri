@@ -179,11 +179,6 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     }
     val navigationController = rememberNavController()
     SumUp.snackBarState = snackBarState
-    LaunchedEffect(reloadConfScreen) {
-        savedItems.reload()
-        priceList.loadPriceLists()
-        serviceViewModel.reload()
-    }
     AppTheme {
         if(loggedIn == false) {
             LoginScreen(dataStore, licenceRegistration)
@@ -234,7 +229,11 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
-                        composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, { reloadConfScreen = !reloadConfScreen}, nearby, dataBase) }
+                        composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, {
+                            savedItems.reload()
+                            priceList.loadPriceLists()
+                            serviceViewModel.reload()
+                        }, nearby, dataBase) }
                     }
                 }
             }

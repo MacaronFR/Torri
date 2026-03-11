@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CircleMinus
 import com.composables.icons.lucide.Lucide
@@ -27,7 +29,8 @@ import torri.composeapp.generated.resources.allDrawableResources
 
 @Composable
 fun ItemView(item: ItemEntity, price: Double, currency: String, add: () -> Unit, remove: () -> Unit) {
-	Card(Modifier.clickable { add() }) {
+	val hapticFeedback = LocalHapticFeedback.current
+	Card(Modifier.clickable { add(); hapticFeedback.performHapticFeedback(HapticFeedbackType.ToggleOn) }) {
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
 				IconButton(onClick = { remove() }) {

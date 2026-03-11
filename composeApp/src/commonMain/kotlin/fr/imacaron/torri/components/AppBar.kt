@@ -37,7 +37,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dataStore: DataStore<Preferences>) {
-	val scope = rememberCoroutineScope()
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { controller, destination, arguments ->
 		destination.route?.let { currentRoute = it }
@@ -87,9 +86,9 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dat
 					}
 				}
 				Destination.PRICE_LIST.route -> {
-					IconButton( { navController.navigate(Destination.PRICE_LIST_ADD.route) }) {
-						Icon(Lucide.Plus, contentDescription = "Ajouter une carte", tint = MaterialTheme.colorScheme.primary)
-					}
+//					IconButton( { navController.navigate(Destination.PRICE_LIST_ADD.route) }) {
+//						Icon(Lucide.Plus, contentDescription = "Ajouter une carte", tint = MaterialTheme.colorScheme.primary)
+//					}
 				}
 			}
 		},

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Trash
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.viewmodel.PriceListViewModel
@@ -29,6 +32,14 @@ fun PriceListScreen(priceList: PriceListViewModel, navController: NavController)
 	Column(Modifier.padding(8.dp)) {
 		Text("Cartes", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(16.dp))
 		LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+			item {
+				OutlinedCard(Modifier.clickable { navController.navigate(Destination.PRICE_LIST_ADD.route) }.fillMaxWidth()) {
+					Row(Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+						Icon(Lucide.Plus, "Ajouter une carte")
+						Text("Ajouter une carte", style = MaterialTheme.typography.titleLarge)
+					}
+				}
+			}
 			items(priceList.priceLists) {
 				Card(Modifier.clickable { navController.navigate(Destination.PRICE_LIST_EDIT.routeWithArg("id" to it.priceList.idPriceList.toString())) }) {
 					Row(Modifier.padding(start = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
