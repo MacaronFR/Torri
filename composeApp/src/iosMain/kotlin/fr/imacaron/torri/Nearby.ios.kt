@@ -6,8 +6,6 @@ import androidx.compose.runtime.setValue
 import fr.imacaron.torri.ios.NearbySwift
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.channels.Channel
-import org.publicvalue.multiplatform.oidc.toByteArray
-import org.publicvalue.multiplatform.oidc.toNSData
 
 @OptIn(ExperimentalForeignApi::class)
 class Nearbyios: Nearby() {
