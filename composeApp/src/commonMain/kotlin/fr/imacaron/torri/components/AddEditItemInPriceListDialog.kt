@@ -1,16 +1,19 @@
 package fr.imacaron.torri.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -25,13 +28,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
+import org.jetbrains.compose.resources.painterResource
+import torri.composeapp.generated.resources.Res
+import torri.composeapp.generated.resources.allDrawableResources
 
 @Composable
-fun AddEditItemInPriceListDialog(onDismiss: () -> Unit, savedItems: SavedItemViewModel, basePrice: String = "", baseItem: ItemEntity? = null, onDone: (Double, ItemEntity) -> Unit) {
+fun AddEditItemInPriceListDialog(onDismiss: () -> Unit, savedItems: SavedItemViewModel, itemsId: List<Long>, basePrice: String = "", baseItem: ItemEntity? = null, onDone: (Double, ItemEntity) -> Unit) {
 	var price by remember { mutableStateOf(basePrice) }
 	var selectedItem by remember { mutableStateOf(baseItem) }
 	Dialog(onDismiss) {
@@ -49,7 +56,7 @@ fun AddEditItemInPriceListDialog(onDismiss: () -> Unit, savedItems: SavedItemVie
 				keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, autoCorrectEnabled = false, imeAction = ImeAction.Done)
 			)
 			LazyColumn {
-				items(savedItems.items) { item ->
+				items(savedItems.items.filter { it.idItem !in itemsId || it.idItem == selectedItem?.idItem }) { item ->
 					Row(
 						Modifier
 							.fillMaxWidth()
@@ -62,6 +69,7 @@ fun AddEditItemInPriceListDialog(onDismiss: () -> Unit, savedItems: SavedItemVie
 						verticalAlignment = Alignment.CenterVertically
 					) {
 						RadioButton(selectedItem?.idItem == item.idItem, { selectedItem = item })
+						Image(painterResource(Res.allDrawableResources[item.image]!!), "Image de ${item.name}", Modifier.padding(end = 8.dp).size(32.dp))
 						Text(item.name)
 					}
 				}

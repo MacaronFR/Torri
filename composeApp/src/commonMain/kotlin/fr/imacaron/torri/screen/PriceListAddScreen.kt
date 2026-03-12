@@ -43,7 +43,6 @@ import androidx.navigation.NavController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Plus
-import fr.imacaron.torri.components.AddEditItemInPriceListDialog
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.formatPrice
@@ -58,6 +57,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 	var name by remember { mutableStateOf("") }
 	var currency by remember { mutableStateOf("") }
 	val items = remember { mutableStateListOf<PriceListItemEntity>() }
+	val itemsId = remember { mutableStateListOf<Long>() }
 	var addItemDialog by remember { mutableStateOf(false) }
 	Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 		Card(Modifier.padding(top = 4.dp, start = 4.dp, end = 4.dp).fillMaxWidth()) {
@@ -94,7 +94,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
 						Text("${itemEntity?.name}: ${item.price.formatPrice()} $currency")
 						Spacer(Modifier.weight(1f))
-						IconButton({ items.remove(item) }) {
+						IconButton({ items.remove(item); itemsId.remove(item.idItem) }) {
 							Icon(Lucide.Minus, contentDescription = "Retirer un produit")
 						}
 					}
@@ -108,6 +108,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 		val onDone = {
 			if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
 				items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = -1, price = price.toDouble()))
+				itemsId.add(selectedItem!!.idItem)
 				price = ""
 				addItemDialog = false
 				selectedItem = null
@@ -119,7 +120,14 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 			Card(Modifier.fillMaxWidth()) {
 				OutlinedTextField(price, { price = it.replace(',', '.') }, label = { Text("Prix en $currency") }, modifier = Modifier.padding(16.dp).fillMaxWidth(), keyboardActions = KeyboardActions(onDone = { onDone() }), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, autoCorrectEnabled = false, imeAction = ImeAction.Done))
 				LazyColumn {
-					items(savedItems.items) { item ->
+					if(savedItems.items.count() == itemsId.count()) {
+						item {
+							Row(Modifier.padding(horizontal = 16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+								Text("Aucun produit disponible", Modifier.padding(16.dp).fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+							}
+						}
+					}
+					items(savedItems.items.filter { it.idItem !in itemsId }) { item ->
 						Row(
 							Modifier
 								.fillMaxWidth()
@@ -132,6 +140,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 							verticalAlignment = Alignment.CenterVertically
 						) {
 							RadioButton(selectedItem?.idItem == item.idItem, { selectedItem = item })
+							Image(painterResource(Res.allDrawableResources[item.image]!!), "Image de ${item.name}", Modifier.padding(end = 8.dp).size(32.dp))
 							Text(item.name)
 						}
 					}
@@ -140,6 +149,7 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 					TextButton({
 						if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
 							items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = -1, price = price.toDouble()))
+							itemsId.add(selectedItem!!.idItem)
 							price = ""
 							addItemDialog = false
 							selectedItem = null

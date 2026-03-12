@@ -69,10 +69,12 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 	var name by remember { mutableStateOf(priceList?.priceList?.name ?: "") }
 	var currency by remember { mutableStateOf(priceList?.priceList?.currency ?: "") }
 	val items = remember { mutableStateListOf<PriceListItemEntity>() }
+	val itemsId = remember { mutableStateListOf<Long>() }
 	val scope = rememberCoroutineScope()
 	LaunchedEffect(priceList) {
 		if(priceList != null) {
 			items.addAll(priceListViewModel.getPriceListItems(priceList.priceList))
+			itemsId.addAll(items.map { it.idItem })
 		}
 	}
 	var addItemDialog by remember { mutableStateOf(false) }
@@ -85,7 +87,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 					priceList?.let {
 						if(serviceViewModel.currentService?.idPriceList == it.priceList.idPriceList || serviceViewModel.services.any { service -> service.idPriceList == it.priceList.idPriceList}) {
 							scope.launch {
-								snackBarState.showSnackbar("Impossible de supprimer cette carte. Il est actuellement utilisé dans un service actuel ou terminé")
+								snackBarState.showSnackbar("Impossible de supprimer cette carte. Elle est actuellement utilisé dans le service actuel ou un service terminé")
 							}
 						} else {
 							priceListViewModel.delete(priceList.priceList)
@@ -131,7 +133,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 						IconButton({ editItem = item }) {
 							Icon(Lucide.Pencil, contentDescription = "Modifier un produit")
 						}
-						IconButton({ items.remove(item) }) {
+						IconButton({ items.remove(item); itemsId.remove(item.idItem) }) {
 							Icon(Lucide.Minus, contentDescription = "Retirer un produit")
 						}
 					}
@@ -140,9 +142,11 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 		}
 	}
 	if(editItem != null) {
-		AddEditItemInPriceListDialog( { editItem = null }, savedItems, editItem?.price?.toString() ?: "", editItem?.let { ei -> savedItems.items.find { it.idItem == ei.idItem }}) { price, selectedItem ->
+		AddEditItemInPriceListDialog( { editItem = null }, savedItems, itemsId, editItem?.price?.toString() ?: "", editItem?.let { ei -> savedItems.items.find { it.idItem == ei.idItem }}) { price, selectedItem ->
 			if(priceList != null) {
 				items.find { it.idPriceListItem == editItem?.idPriceListItem }?.let {
+					itemsId.remove(it.idItem)
+					itemsId.add(selectedItem.idItem)
 					it.price = price
 					it.idItem = selectedItem.idItem
 				}
@@ -157,6 +161,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 			if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
 				if(priceList != null) {
 					items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = priceList.priceList.idPriceList, price = price.toDouble()))
+					itemsId.add(selectedItem!!.idItem)
 					price = ""
 					addItemDialog = false
 					selectedItem = null
@@ -169,7 +174,14 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 			Card(Modifier.fillMaxWidth()) {
 				OutlinedTextField(price, { price = it.replace(',', '.') }, label = { Text("Prix en $currency") }, modifier = Modifier.padding(16.dp).fillMaxWidth(), keyboardActions = KeyboardActions(onDone = { onDone() }), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, autoCorrectEnabled = false, imeAction = ImeAction.Done))
 				LazyColumn {
-					items(savedItems.items) { item ->
+					if(savedItems.items.count() == itemsId.count()) {
+						item {
+							Row(Modifier.padding(horizontal = 16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+								Text("Aucun produit disponible", Modifier.padding(16.dp).fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+							}
+						}
+					}
+					items(savedItems.items.filter { it.idItem !in itemsId }) { item ->
 						Row(
 							Modifier
 								.fillMaxWidth()
@@ -182,6 +194,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 							verticalAlignment = Alignment.CenterVertically
 						) {
 							RadioButton(selectedItem?.idItem == item.idItem, { selectedItem = item })
+							Image(painterResource(Res.allDrawableResources[item.image]!!), "Image de ${item.name}", Modifier.padding(end = 8.dp).size(32.dp))
 							Text(item.name)
 						}
 					}
