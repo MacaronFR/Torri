@@ -51,19 +51,19 @@ kotlin {
 	sourceSets {
 
 		androidMain.dependencies {
-			implementation(compose.preview)
+			implementation(libs.ui.tooling.preview)
 			implementation(libs.androidx.activity.compose)
 			implementation(libs.merchant.sdk)
 			implementation(libs.play.services.nearby.android)
 		}
 		commonMain.dependencies {
-			implementation(compose.runtime)
-			implementation(compose.foundation)
-			implementation(compose.material3)
-			implementation(compose.ui)
-			implementation(compose.animation)
-			implementation(compose.components.resources)
-			implementation(compose.components.uiToolingPreview)
+			implementation(libs.runtime)
+			implementation(libs.foundation)
+			implementation(libs.material3)
+			implementation(libs.ui)
+			implementation(libs.animation)
+			implementation(libs.components.resources)
+			implementation(libs.ui.tooling.preview)
 			implementation(libs.androidx.lifecycle.viewmodel)
 			implementation(libs.androidx.lifecycle.runtimeCompose)
 			implementation(libs.room.runtime)
@@ -121,7 +121,7 @@ android {
 
 dependencies {
 	coreLibraryDesugaring(libs.desugar.jdk.libs)
-	debugImplementation(compose.uiTooling)
+	debugImplementation(libs.ui.tooling)
 	add("kspAndroid", libs.room.compiler)
 	add("kspIosSimulatorArm64", libs.room.compiler)
 	add("kspIosX64", libs.room.compiler)
