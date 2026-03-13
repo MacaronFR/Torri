@@ -73,7 +73,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 								if (nearby.advertising) {
 									nearby.stopAdvertising()
 								} else {
-									nearby.startAdvertising()
+									nearby.startAdvertising(false)
 								}
 							}, Modifier.weight(1f), !nearby.discovering) {
 								Text(
@@ -86,7 +86,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 								if (nearby.discovering) {
 									nearby.stopDiscovery()
 								} else {
-									nearby.startDiscovery()
+									nearby.startDiscovery(false)
 								}
 							}, Modifier.weight(1f), !nearby.advertising) {
 								Text(
@@ -109,7 +109,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 											horizontalArrangement = Arrangement.SpaceBetween,
 											verticalAlignment = Alignment.CenterVertically
 										) {
-											Text("Appareil ${it.name} (${it.id})")
+											Text(it.name)
 											IconButton({ nearby.connect(it) }) {
 												Icon(Lucide.ArrowRight, "Se connecter à l'appareil")
 											}

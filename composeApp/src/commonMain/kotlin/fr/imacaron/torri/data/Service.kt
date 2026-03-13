@@ -1,5 +1,6 @@
 package fr.imacaron.torri.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Embedded
@@ -47,6 +48,8 @@ data class ServiceEntity(
 	val date: LocalDate,
 	val idPriceList: Long,
 	val pending: Boolean,
+	@ColumnInfo(defaultValue = "true")
+	val master: Boolean
 )
 
 data class ServiceWithPriceList(

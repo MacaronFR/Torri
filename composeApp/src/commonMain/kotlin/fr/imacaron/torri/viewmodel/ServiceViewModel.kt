@@ -43,10 +43,21 @@ class ServiceViewModel(private val db: AppDataBase, private val commandViewModel
 			db.serviceDao().create(ServiceEntity(
 				date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
 				idPriceList = priceList,
-				pending = true
+				pending = true,
+				master = true
 			))
 			loadServices()
 		}
+	}
+
+	fun receiveService(service: ServiceEntity) {
+		viewModelScope.launch {
+			db.serviceDao().create(service)
+		}
+	}
+
+	suspend fun getServiceForSlave(id: Long): ServiceEntity? {
+		return db.serviceDao().getById(id)?.copy(master = false)
 	}
 
 	fun setCurrentServiceDone() {

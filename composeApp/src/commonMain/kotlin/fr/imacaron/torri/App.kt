@@ -6,6 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.screen.CommandDetailScreen
 import fr.imacaron.torri.screen.CommandScreen
+import fr.imacaron.torri.screen.CommandSlaveScreen
 import fr.imacaron.torri.screen.ConfScreen
 import fr.imacaron.torri.screen.ItemAddScreen
 import fr.imacaron.torri.screen.ItemScreen
@@ -56,6 +58,7 @@ import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import io.ktor.client.HttpClient
+import io.ktor.websocket.Frame
 
 val activated = booleanPreferencesKey("activated")
 val clientKey = stringPreferencesKey("clientID")
@@ -85,11 +88,19 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
     }
 }
 
+enum class P2PType {
+    OFFLINE,
+    MASTER,
+    COMMAND_SLAVE,
+    KITCHEN_SLAVE
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient, nearby: Nearby) {
     var reloadConfScreen by remember { mutableStateOf(false) }
     val snackBarState = remember { SnackbarHostState() }
+    var type by remember { mutableStateOf(P2PType.OFFLINE) }
     SumUp.onLogin = { isLogged ->
         if(!isLogged) {
             dataStore.data.collect {
@@ -184,7 +195,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
             LoginScreen(dataStore, licenceRegistration)
         } else if(loggedIn == null) {
             LoadingScreen()
-        } else {
+        } else if (type == P2PType.OFFLINE || type == P2PType.MASTER) {
             var items: PriceListWithItem? by remember { mutableStateOf(null) }
             var prices: List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
             LaunchedEffect(serviceViewModel.currentService) {
@@ -196,7 +207,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                 }
             }
             Scaffold(
-                topBar = { AppBar(navigationController, serviceViewModel, dataStore) },
+                topBar = { AppBar(navigationController, serviceViewModel, type, { type = it }) },
                 bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
                 floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
                 snackbarHost = { SnackbarHost(snackBarState) }
@@ -233,7 +244,19 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             savedItems.reload()
                             priceList.loadPriceLists()
                             serviceViewModel.reload()
-                        }, nearby, dataBase) }
+                        }, nearby, dataBase, { type = it }) }
+                    }
+                }
+            }
+        } else {
+            Scaffold(
+                topBar = { AppBar(navigationController, serviceViewModel, type, { type = it }) },
+            ) {
+                Row(Modifier.padding(it)) {
+                    if(type == P2PType.COMMAND_SLAVE) {
+                        CommandSlaveScreen(nearby)
+                    } else if(type == P2PType.KITCHEN_SLAVE) {
+                        Text("Kitchen Slave")
                     }
                 }
             }

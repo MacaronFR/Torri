@@ -1,5 +1,6 @@
 package fr.imacaron.torri
 
+import android.provider.Settings
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -26,19 +27,27 @@ class NearbyAndroid(
 	private val activity: MainActivity,
 ): Nearby() {
 	private val serviceId = "fr.imacaron.torri"
-	private var name = "Android"
+	private val name: String
+		get() = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+			Settings.System.getString(activity.contentResolver, Settings.Global.DEVICE_NAME) ?: run {
+				Settings.Secure.getString(activity.contentResolver, "bluetooth_name")
+			}
+		} else {
+			Settings.Secure.getString(activity.contentResolver, "bluetooth_name")
+		}
 
 	override var advertising by mutableStateOf(false)
 
 	override var discovering by mutableStateOf(false)
 
-	override fun startAdvertising() {
+	override fun startAdvertising(star: Boolean) {
+		this.star = star
 		master = true
 		activity.lifecycleScope.launch {
 			activity.checkPermission {
 				if(it) {
 					val options = AdvertisingOptions.Builder()
-						.setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+						.setStrategy(if(star) Strategy.P2P_STAR else Strategy.P2P_POINT_TO_POINT).build()
 					GoogleNearby.getConnectionsClient(activity)
 						.startAdvertising(name, serviceId, Callback(), options)
 						.addOnSuccessListener {
@@ -58,13 +67,13 @@ class NearbyAndroid(
 		advertising = false
 	}
 
-	override fun startDiscovery() {
+	override fun startDiscovery(star: Boolean) {
 		master = false
 		activity.lifecycleScope.launch {
 			activity.checkPermission {
 				if (it) {
 					val options = DiscoveryOptions.Builder()
-						.setStrategy(Strategy.P2P_POINT_TO_POINT).build()
+						.setStrategy(if(star) Strategy.P2P_STAR else Strategy.P2P_POINT_TO_POINT).build()
 					GoogleNearby.getConnectionsClient(activity)
 						.startDiscovery(serviceId, DiscoveryCallback(), options)
 						.addOnSuccessListener {
@@ -143,7 +152,9 @@ class NearbyAndroid(
 					connected = connecting
 					connecting = null
 					stopDiscovery()
-					stopAdvertising()
+					if(!star) {
+						stopAdvertising()
+					}
 				}
 				ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
 					connected = null
