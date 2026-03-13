@@ -6,11 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 abstract class Nearby {
-	abstract fun startAdvertising()
+	abstract fun startAdvertising(star: Boolean)
 
 	abstract fun stopAdvertising()
 
-	abstract fun startDiscovery()
+	abstract fun startDiscovery(star: Boolean)
 
 	abstract fun stopDiscovery()
 
@@ -41,6 +41,8 @@ abstract class Nearby {
 		protected set
 
 	val discoveredDevices: MutableList<Device> = mutableStateListOf()
+
+	protected var star by mutableStateOf(false)
 
 	data class Device(val name: String, val id: String)
 }

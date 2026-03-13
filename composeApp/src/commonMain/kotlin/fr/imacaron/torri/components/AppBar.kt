@@ -21,17 +21,21 @@ import androidx.navigation.NavController
 import androidx.savedstate.read
 import com.composables.icons.lucide.ArrowLeft
 import com.composables.icons.lucide.BookText
+import com.composables.icons.lucide.CloudOff
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Save
 import com.composables.icons.lucide.Send
+import com.composables.icons.lucide.ServerOff
+import com.composables.icons.lucide.X
 import fr.imacaron.torri.Destination
+import fr.imacaron.torri.P2PType
 import fr.imacaron.torri.saveToFile
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, datastore: DataStore<Preferences>) {
+fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, type: P2PType, setType: (P2PType) -> Unit) {
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { _, destination, _ ->
 		destination.route?.let { currentRoute = it }
@@ -80,10 +84,18 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, dat
 						Icon(Lucide.Save, "Exporter le service en CSV", tint = MaterialTheme.colorScheme.primary)
 					}
 				}
-				Destination.PRICE_LIST.route -> {
-//					IconButton( { navController.navigate(Destination.PRICE_LIST_ADD.route) }) {
-//						Icon(Lucide.Plus, contentDescription = "Ajouter une carte", tint = MaterialTheme.colorScheme.primary)
-//					}
+			}
+			if(type == P2PType.MASTER) {
+				IconButton({ setType(P2PType.OFFLINE) }) {
+					Icon(Lucide.ServerOff, "Fermer la connexion")
+				}
+			} else if(type == P2PType.COMMAND_SLAVE) {
+				IconButton({ setType(P2PType.OFFLINE) }) {
+					Icon(Lucide.CloudOff, "Fermer la connexion")
+				}
+			} else if(type == P2PType.KITCHEN_SLAVE) {
+				IconButton({ setType(P2PType.OFFLINE) }) {
+					Icon(Lucide.CloudOff, "Fermer la connexion")
 				}
 			}
 		},

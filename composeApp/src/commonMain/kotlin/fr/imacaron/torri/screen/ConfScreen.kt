@@ -34,6 +34,7 @@ import com.composables.icons.lucide.LogIn
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Nearby
+import fr.imacaron.torri.P2PType
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.activated
 import fr.imacaron.torri.clientKey
@@ -52,7 +53,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase) {
+fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase, setType: (P2PType) -> Unit) {
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
@@ -193,6 +194,22 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 			}
 			SyncDialog(syncDialog, nearby, db, snackBarState, doReload) {
 				syncDialog = false
+			}
+		}
+		Text(
+			"Connecter des appareils pour prendre des commandes",
+			Modifier.padding(top = 8.dp),
+			style = MaterialTheme.typography.titleMedium
+		)
+		Card(Modifier.fillMaxWidth()) {
+			TextButton( { setType(P2PType.MASTER); nearby.startAdvertising(true) }, Modifier.fillMaxWidth()) {
+				Text("Démarrer en tant qu'appareil principal")
+			}
+			TextButton({ setType(P2PType.COMMAND_SLAVE); nearby.startDiscovery(true) }, Modifier.fillMaxWidth()) {
+				Text("Démarrer en tant qu'appareil de commande")
+			}
+			TextButton({ setType(P2PType.KITCHEN_SLAVE); nearby.startDiscovery(true) }, Modifier.fillMaxWidth()) {
+				Text("Démarrer en tant qu'appareil de cuisine")
 			}
 		}
 		Row(

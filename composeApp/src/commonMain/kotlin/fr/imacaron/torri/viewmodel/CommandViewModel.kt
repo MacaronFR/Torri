@@ -88,7 +88,8 @@ class CommandViewModel(
 					CommandEntity(
 						idService = s.idService,
 						payementMethod = method,
-						total = command.map { prices[it.key]!! * it.value }.sum()
+						total = command.map { prices[it.key]!! * it.value }.sum(),
+						done = false
 					)
 				)
 				db.commandPriceListItemDao().insertAll(command.map { (idPriceListItem, quantity) ->
@@ -97,6 +98,28 @@ class CommandViewModel(
 				command.clear()
 			}
 		}
+	}
+
+	fun receiveCommand(command: CommandEntity, items: List<CommandPriceListItemEntity>) {
+		viewModelScope.launch {
+			db.commandDao().insert(command)
+			db.commandPriceListItemDao().insertAll(items)
+		}
+	}
+
+	fun setCommandDone(command: CommandEntity) {
+		viewModelScope.launch {
+			db.commandDao().update(command.copy(done = true))
+		}
+	}
+
+	suspend fun getCommandOfCurrentServiceForSlave(): Map<CommandEntity, List<CommandPriceListItemEntity>> {
+		val commands = service?.idService?.let {
+			db.commandDao().getByService(it)
+		}
+		return commands?.associate {
+			it to db.commandPriceListItemDao().getByCommand(it.idCommand).map { cpli -> cpli.commandPriceListItem }
+		} ?: emptyMap()
 	}
 
 	suspend fun loadCommandDetail(command: CommandEntity): List<CommandPriceListItemsWithPriceListItem> {

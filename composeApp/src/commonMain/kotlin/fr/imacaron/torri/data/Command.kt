@@ -1,10 +1,12 @@
 package fr.imacaron.torri.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface CommandDao {
@@ -16,6 +18,9 @@ interface CommandDao {
 
 	@Query("DELETE FROM CommandEntity WHERE idCommand = :idCommand")
 	suspend fun delete(idCommand: Long): Int
+
+	@Update
+	suspend fun update(command: CommandEntity)
 }
 
 @Entity
@@ -24,4 +29,6 @@ data class CommandEntity(
 	val idService: Long,
 	var total: Double,
 	var payementMethod: String,
+	@ColumnInfo(defaultValue = "false")
+	var done: Boolean
 )
