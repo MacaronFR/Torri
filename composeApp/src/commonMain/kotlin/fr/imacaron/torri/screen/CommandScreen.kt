@@ -100,12 +100,14 @@ fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, p
 				if(commandViewModel.command.isEmpty()) {
 					Text("Aucun article")
 				} else {
-					commandViewModel.command.forEach { (itemId, quantity) ->
-						Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-							Text("$quantity", style = MaterialTheme.typography.titleLarge)
-							Text(items.find { it.idItem == itemId }?.name ?: "Inconnu", style = MaterialTheme.typography.titleLarge)
-							Spacer(Modifier.weight(1f))
-							Text("${commandViewModel.prices[itemId]?.times(quantity)?.formatPrice()} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
+					commandViewModel.command.forEach { (priceListItemId, quantity) ->
+						prices.find { it.idPriceListItem == priceListItemId }?.let { priceListItem ->
+							Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+								Text("$quantity", style = MaterialTheme.typography.titleLarge)
+								Text(items.find { it.idItem == priceListItem.idItem }?.name ?: "Inconnu", style = MaterialTheme.typography.titleLarge)
+								Spacer(Modifier.weight(1f))
+								Text("${priceListItem.price.times(quantity).formatPrice()} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
+							}
 						}
 					}
 				}
