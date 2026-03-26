@@ -35,7 +35,6 @@ import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
 import fr.imacaron.torri.data.PriceListEntity
 import fr.imacaron.torri.viewmodel.BaseCommandViewModel
-import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res

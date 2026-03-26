@@ -22,9 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.read
-import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 import com.composables.icons.lucide.BookOpen
 import com.composables.icons.lucide.Cog
 import com.composables.icons.lucide.Command
@@ -59,7 +57,6 @@ import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
 import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import io.ktor.client.HttpClient
-import io.ktor.websocket.Frame
 
 val activated = booleanPreferencesKey("activated")
 val clientKey = stringPreferencesKey("clientID")

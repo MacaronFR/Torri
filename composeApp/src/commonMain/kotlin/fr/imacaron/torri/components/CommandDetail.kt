@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.composables.icons.lucide.CheckCheck
 import com.composables.icons.lucide.Lucide
-import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem

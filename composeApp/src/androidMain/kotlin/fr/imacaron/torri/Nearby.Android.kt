@@ -21,7 +21,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.launch
-import kotlin.emptyArray
 import com.google.android.gms.nearby.Nearby as GoogleNearby
 
 class NearbyAndroid(

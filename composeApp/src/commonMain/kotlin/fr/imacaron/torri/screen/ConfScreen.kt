@@ -51,15 +51,11 @@ import fr.imacaron.torri.sumupAccessToken
 import fr.imacaron.torri.sumupExpire
 import fr.imacaron.torri.sumupRefreshToken
 import fr.imacaron.torri.viewmodel.CommandViewModel
-import fr.imacaron.torri.viewmodel.PriceListViewModel
-import fr.imacaron.torri.viewmodel.ServiceViewModel
 import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 
 @Composable
 fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase, type: P2PType, setType: (P2PType) -> Unit, commandViewModel: CommandViewModel, slaveCommandViewModel: SlaveCommandViewModel) {

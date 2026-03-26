@@ -6,11 +6,7 @@ import androidx.compose.runtime.setValue
 import fr.imacaron.torri.ios.NearbySwift
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalForeignApi::class)
 class Nearbyios: Nearby() {
@@ -147,7 +143,7 @@ class Nearbyios: Nearby() {
 		nearbySwift.sendDataWithData(data.toNSData(), id)
 	}
 
-	override suspend fun receiveData(): ByteArray? {
+	override suspend fun receiveData(): ByteArray {
 		val channel = Channel<ByteArray>(1)
 		nearbySwift.receiveDataWithCompletionHandler { data, _ ->
 			data?.let { channel.trySend(it.message.toByteArray()) }
@@ -162,7 +158,7 @@ class Nearbyios: Nearby() {
 	}
 
 	private fun receiveData(channel: Channel<Message>) {
-		nearbySwift.receiveDataWithCompletionHandler { data, error ->
+		nearbySwift.receiveDataWithCompletionHandler { data, _ ->
 			println(data)
 			data?.let { println(it.message) }
 			data?.let { channel.trySend(Message(it.message.toByteArray(), it.id)) }

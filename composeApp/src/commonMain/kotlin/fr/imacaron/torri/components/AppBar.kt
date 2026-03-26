@@ -14,8 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.savedstate.read
@@ -26,7 +24,6 @@ import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Save
 import com.composables.icons.lucide.Send
 import com.composables.icons.lucide.ServerOff
-import com.composables.icons.lucide.X
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.P2PType

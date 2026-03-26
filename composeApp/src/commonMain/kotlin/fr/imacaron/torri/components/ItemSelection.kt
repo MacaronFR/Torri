@@ -11,7 +11,6 @@ import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.BaseCommandViewModel
-import fr.imacaron.torri.viewmodel.CommandViewModel
 
 @Composable
 fun ItemSelection(cols: Int, items: List<ItemEntity>, prices: List<PriceListItemEntity>, priceList: PriceListWithItem, commandViewModel: BaseCommandViewModel, modifier: Modifier = Modifier) {

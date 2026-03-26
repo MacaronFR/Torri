@@ -27,13 +27,10 @@ import androidx.compose.ui.window.Dialog
 import com.composables.icons.lucide.Banknote
 import com.composables.icons.lucide.CreditCard
 import com.composables.icons.lucide.Lucide
-import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.BaseCommandViewModel
-import fr.imacaron.torri.viewmodel.CommandViewModel
-import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.launch
 
 @Composable

@@ -11,17 +11,15 @@ import androidx.navigation.NavController
 import com.composables.icons.lucide.CheckCheck
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Destination
-import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.viewmodel.BaseCommandViewModel
-import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 
 @Composable
 fun FAB(navController: NavController, commandViewModel: BaseCommandViewModel, items: PriceListWithItem?, prices: List<PriceListItemEntity>) {
 	var currentRoute by remember { mutableStateOf("") }
-	navController.addOnDestinationChangedListener { controller, destination, arguments ->
+	navController.addOnDestinationChangedListener { _, destination, _ ->
 		destination.route?.let { currentRoute = it }
 	}
 	if(currentRoute == Destination.SERVICE_COMMAND.route || commandViewModel is SlaveCommandViewModel) {
