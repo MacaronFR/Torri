@@ -101,15 +101,10 @@ class SlaveCommandViewModel(
 			return
 		}
 		viewModelScope.launch {
-			println("Paying")
 			nearby.sendData("payCommand:${Json.encodeToString(prepareCommandEntity(method))}".toByteArray())
-			println("Command sent")
 			val id = commandIdChannel.receive()
-			println("Command id received: $id")
 			nearby.sendData("payCommandDetail:${Json.encodeToString(prepareCommandDetail(id))}".toByteArray())
-			println("Command detail sent")
 			command.clear()
-			println("Command cleared")
 		}
 	}
 

@@ -242,9 +242,7 @@ class NearbyAndroid(
 
 	private inner class InputCallback: PayloadCallback() {
 		override fun onPayloadReceived(endpointId: String, payload: Payload) {
-			println("onPayloadReceived")
 			if(star) {
-				println("star")
 				val message = payload.asBytes() ?: ByteArray(0)
 				if(message.decodeToString().startsWith("Type:")) {
 					if(master) {
@@ -259,12 +257,9 @@ class NearbyAndroid(
 						}
 					}
 				} else {
-					println("message channel, ")
-					println("message channel, ${message.decodeToString()}")
 					receivingMessageChannel.trySend(Message(message, endpointId))
 				}
 			} else {
-				println("not star")
 				receivingPayload = payload
 			}
 		}

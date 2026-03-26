@@ -31,11 +31,6 @@ abstract class BaseCommandViewModel: ViewModel() {
 
 	val totalPrice: Double
 		get() {
-			println(prices.toMap())
-			command.map {
-				println(it.key)
-				println(prices[it.key])
-			}
 			return command.map { prices[it.key]!! * it.value }.sum()
 		}
 

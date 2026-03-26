@@ -73,7 +73,6 @@ import NearbyConnections
     }
 
     @objc public func sendData(data: Data, endpointId: EndpointID) {
-        print("send data")
         connectionManager.send(data, to: [endpointId])
     }
 

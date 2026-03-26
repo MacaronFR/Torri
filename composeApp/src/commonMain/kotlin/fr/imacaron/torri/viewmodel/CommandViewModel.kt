@@ -64,19 +64,14 @@ class CommandViewModel(
 	}
 
 	suspend fun paySlave(data: String, senderId: String) {
-		println("Received: $data")
 		val command = Json.decodeFromString<CommandEntity?>(data) ?: return
 		val id = db.commandDao().insert(command)
-		println("Command inserted: $id")
 		nearby.sendDataTo("commandId:${id}".encodeToByteArray(), senderId)
-		println("Command id sent")
 	}
 
 	suspend fun paySlaveDetail(data: String) {
-		println("Received detail: $data")
 		val commandDetail: List<CommandPriceListItemEntity> = Json.decodeFromString(data)
 		db.commandPriceListItemDao().insertAll(commandDetail)
-		println("Command detail inserted")
 	}
 
 	override var service: ServiceEntity?

@@ -132,7 +132,6 @@ class Nearbyios: Nearby() {
 	}
 
 	override fun sendData(data: ByteArray) {
-		println("send data ${connected?.id}")
 		if(connected == null) {
 			return
 		}
@@ -159,9 +158,6 @@ class Nearbyios: Nearby() {
 
 	private fun receiveData(channel: Channel<Message>) {
 		nearbySwift.receiveDataWithCompletionHandler { data, _ ->
-			println(data)
-			data?.let { println(it.message) }
-			data?.let { channel.trySend(Message(it.message.toByteArray(), it.id)) }
 			receiveData(channel)
 		}
 	}
