@@ -14,30 +14,30 @@ import platform.Foundation.NSUserDomainMask
 
 @OptIn(ExperimentalForeignApi::class)
 val dataStore = createDataStore {
-    val documentDir = NSFileManager.defaultManager.URLForDirectory(
-        directory = NSDocumentDirectory,
-        inDomain = NSUserDomainMask,
-        appropriateForURL = null,
-        create = false,
-        error = null
-    )
-    requireNotNull(documentDir).path + "/$DATA_STORE_FILE_NAME"
+	val documentDir = NSFileManager.defaultManager.URLForDirectory(
+		directory = NSDocumentDirectory,
+		inDomain = NSUserDomainMask,
+		appropriateForURL = null,
+		create = false,
+		error = null
+	)
+	requireNotNull(documentDir).path + "/$DATA_STORE_FILE_NAME"
 }
 
 val client = HttpClient(Darwin) {
-    engine {
-        configureRequest {
-            setAllowsCellularAccess(true)
-        }
-    }
-    install(ContentNegotiation) {
-        json()
-    }
+	engine {
+		configureRequest {
+			setAllowsCellularAccess(true)
+		}
+	}
+	install(ContentNegotiation) {
+		json()
+	}
 }
 
 @Suppress("unused", "FunctionName")
 fun MainViewController() = ComposeUIViewController {
-    App(getRoomDataBase(getDatabaseBuilder()), dataStore, client = client, nearby = Nearbyios())
+	App(getRoomDataBase(getDatabaseBuilder()), dataStore, client = client, nearby = Nearbyios())
 }.apply {
-    SumUp.viewController = this
+	SumUp.viewController = this
 }

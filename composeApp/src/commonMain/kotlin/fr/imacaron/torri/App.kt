@@ -66,200 +66,200 @@ val sumupExpire = longPreferencesKey("sumupExpire")
 val demoInit = booleanPreferencesKey("demoInit")
 
 enum class Destination(val route: String, val label: String, val icon: ImageVector) {
-    SERVICE("service", "Service", Lucide.BookOpen),
-    SERVICE_DETAIL("service/detail/{id}", "Détail du service", Lucide.BookOpen),
-    SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
-    SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
-    SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
-    PRICE_LIST("pricelist", "Cartes", Lucide.SquareMenu),
-    PRICE_LIST_ADD("pricelist/add", "Ajouter une carte", Lucide.SquareMenu),
-    PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier une carte", Lucide.SquareMenu),
-    ITEMS("items", "Produits", Lucide.Inbox),
-    ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
-    CONF("conf", "Configuration", Lucide.Cog),
-    CONF_SUMUP_LOGIN("conf/sumup/login", "Connexion SumUp", Lucide.Cog);
+	SERVICE("service", "Service", Lucide.BookOpen),
+	SERVICE_DETAIL("service/detail/{id}", "Détail du service", Lucide.BookOpen),
+	SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
+	SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
+	SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
+	PRICE_LIST("pricelist", "Cartes", Lucide.SquareMenu),
+	PRICE_LIST_ADD("pricelist/add", "Ajouter une carte", Lucide.SquareMenu),
+	PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier une carte", Lucide.SquareMenu),
+	ITEMS("items", "Produits", Lucide.Inbox),
+	ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
+	CONF("conf", "Configuration", Lucide.Cog),
+	CONF_SUMUP_LOGIN("conf/sumup/login", "Connexion SumUp", Lucide.Cog);
 
-    fun routeWithArg(vararg args: Pair<String, String>): String {
-        var route = this.route
-        args.forEach { route = route.replace("{${it.first}}", it.second) }
-        return route
-    }
+	fun routeWithArg(vararg args: Pair<String, String>): String {
+		var route = this.route
+		args.forEach { route = route.replace("{${it.first}}", it.second) }
+		return route
+	}
 }
 
 enum class P2PType {
-    OFFLINE,
-    MASTER,
-    COMMAND_SLAVE,
-    KITCHEN_SLAVE
+	OFFLINE,
+	MASTER,
+	COMMAND_SLAVE,
+	KITCHEN_SLAVE
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient, nearby: Nearby) {
-    var reloadConfScreen by remember { mutableStateOf(false) }
-    val snackBarState = remember { SnackbarHostState() }
-    var type by remember { mutableStateOf(P2PType.OFFLINE) }
-    SumUp.onLogin = { isLogged ->
-        if(!isLogged) {
-            dataStore.data.collect {
-                if(it[sumupRefreshToken] != null) {
-                    val newTokens = SumUp.refreshToken(it[sumupRefreshToken]!!)
-                    dataStore.updateData { pref ->
-                        pref.toMutablePreferences().apply {
-                            if(newTokens == null) {
-                                remove(sumupAccessToken)
-                                remove(sumupRefreshToken)
-                                remove(sumupExpire)
-                                snackBarState.showSnackbar("Reconnexion à SumUp impossible")
-                            } else {
-                                set(sumupAccessToken, newTokens.access_token)
-                                newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
-                                newTokens.expires_in?.let { expiresIn -> set(sumupExpire, newTokens.received_at + expiresIn) }
-                            }
-                        }
-                    }
-                    newTokens?.let { SumUp.login(it.access_token) }
-                } else {
-                    snackBarState.showSnackbar("Session SumUp expirée")
-                }
-            }
-        }
-        reloadConfScreen = !reloadConfScreen
-    }
-    SumUp.init()
-    var loggedIn by remember { mutableStateOf<Boolean?>(null) }
-    val licenceRegistration = LicenceRegistration(client)
-    LaunchedEffect(dataStore) {
-        dataStore.data.collect { d ->
-            if(d[activated] != true) {
-                loggedIn = false
-            } else {
-                licenceRegistration.validate(d[clientKey] ?: "").onSuccess {
-                    loggedIn = true
-                }.onFailure {
-                    loggedIn = false
-                    dataStore.updateData { pref ->
-                        pref.toMutablePreferences().apply {
-                            set(activated, false)
-                            set(clientKey, "")
-                        }
-                    }
-                }
-            }
-            if(d[sumupAccessToken] != null && !SumUp.isLogged) {
-                SumUp.login(d[sumupAccessToken]!!)
-            } else {
-                dataStore.updateData { pref ->
-                    pref.toMutablePreferences().apply {
-                        remove(sumupAccessToken)
-                        remove(sumupRefreshToken)
-                        remove(sumupExpire)
-                    }
-                }
-            }
-        }
-    }
-    val savedItems = viewModel { SavedItemViewModel(dataBase) }
-    val priceList = viewModel { PriceListViewModel(dataBase) }
-    val commandViewModel = viewModel { CommandViewModel(dataBase, nearby) }
-    val serviceViewModel = viewModel { ServiceViewModel(dataBase, commandViewModel, savedItems) }
-    val slaveCommandViewModel = viewModel { SlaveCommandViewModel(nearby) }
-    LaunchedEffect(dataStore, loggedIn) {
-        dataStore.data.collect { d ->
-            if(loggedIn == true && d[clientKey] == "Apple" && d[demoInit] != true) {
-                dataStore.updateData {
-                    it.toMutablePreferences().apply { set(demoInit, true) }
-                }
-                createDataForDemo(savedItems, priceList, serviceViewModel)
-            }
-        }
-    }
-    val displaySidePanel = windowSizeClass.isWidthAtLeast(SizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
-        SizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(SizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
-        SizeClass.EXPANDED)
-    val portrait = LocalWindowInfo.current.containerSize.let {
-        it.width < it.height
-    }
-    val cols = if(windowSizeClass.isWidthAtLeast(SizeClass.EXPANDED)) {
-        if(portrait) 5 else 4
-    } else if(windowSizeClass.isWidthAtLeast(SizeClass.MEDIUM)) {
-        if(portrait) 4 else 3
-    } else {
-        2
-    }
-    val navigationController = rememberNavController()
-    SumUp.snackBarState = snackBarState
-    AppTheme {
-        if(loggedIn == false) {
-            LoginScreen(dataStore, licenceRegistration)
-        } else if(loggedIn == null) {
-            LoadingScreen()
-        } else if (type == P2PType.OFFLINE || type == P2PType.MASTER) {
-            var items: PriceListWithItem? by remember { mutableStateOf(null) }
-            var prices: List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
-            LaunchedEffect(serviceViewModel.currentService) {
-                items = priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }
-            }
-            LaunchedEffect(priceList, items) {
-                items?.let {
-                    prices = priceList.getPriceListItems(it.priceList)
-                }
-            }
-            Scaffold(
-                topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
-                bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
-                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
-                snackbarHost = { SnackbarHost(snackBarState) }
-            ) {
-                Row(Modifier.padding(it)) {
-                    if (displaySidePanel) {
-                        SideBar(navigationController)
-                    }
-                    NavHost(
-                        navigationController,
-                        startDestination = if(savedItems.items.isEmpty()) Destination.ITEMS.route else if(priceList.priceLists.isEmpty()) Destination.PRICE_LIST.route else Destination.SERVICE.route,
-                    ) {
-                        composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
-                        composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
-                            val id = backStackEntry.arguments?.read {
-                                this.getStringOrNull("id")?.toLongOrNull()
-                            } ?: 0L
-                            ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
-                        }
-                        composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
-                        composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel, portrait) }
-                        composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
-                        composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
-                        composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems, navigationController) }
-                        composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
-                            val id = backStackEntry.arguments?.read {
-                                this.getStringOrNull("id")?.toLongOrNull()
-                            } ?: 0L
-                            PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState, commandViewModel)
-                        }
-                        composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
-                        composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
-                        composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, {
-                            savedItems.reload()
-                            priceList.loadPriceLists()
-                            serviceViewModel.reload()
-                        }, nearby, dataBase, type, { type = it }, commandViewModel, slaveCommandViewModel ) }
-                    }
-                }
-            }
-        } else {
-            Scaffold(
-                topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
-                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, slaveCommandViewModel, null, emptyList()) } },
-            ) {
-                Row(Modifier.padding(it)) {
-                    if(type == P2PType.COMMAND_SLAVE) {
-                        CommandSlaveScreen(slaveCommandViewModel, cols, displaySidePanel, portrait)
-                    } else if(type == P2PType.KITCHEN_SLAVE) {
-                        Text("Kitchen Slave")
-                    }
-                }
-            }
-        }
-    }
+	var reloadConfScreen by remember { mutableStateOf(false) }
+	val snackBarState = remember { SnackbarHostState() }
+	var type by remember { mutableStateOf(P2PType.OFFLINE) }
+	SumUp.onLogin = { isLogged ->
+		if(!isLogged) {
+			dataStore.data.collect {
+				if(it[sumupRefreshToken] != null) {
+					val newTokens = SumUp.refreshToken(it[sumupRefreshToken]!!)
+					dataStore.updateData { pref ->
+						pref.toMutablePreferences().apply {
+							if(newTokens == null) {
+								remove(sumupAccessToken)
+								remove(sumupRefreshToken)
+								remove(sumupExpire)
+								snackBarState.showSnackbar("Reconnexion à SumUp impossible")
+							} else {
+								set(sumupAccessToken, newTokens.access_token)
+								newTokens.refresh_token?.let { refreshToken -> set(sumupRefreshToken, refreshToken)}
+								newTokens.expires_in?.let { expiresIn -> set(sumupExpire, newTokens.received_at + expiresIn) }
+							}
+						}
+					}
+					newTokens?.let { SumUp.login(it.access_token) }
+				} else {
+					snackBarState.showSnackbar("Session SumUp expirée")
+				}
+			}
+		}
+		reloadConfScreen = !reloadConfScreen
+	}
+	SumUp.init()
+	var loggedIn by remember { mutableStateOf<Boolean?>(null) }
+	val licenceRegistration = LicenceRegistration(client)
+	LaunchedEffect(dataStore) {
+		dataStore.data.collect { d ->
+			if(d[activated] != true) {
+				loggedIn = false
+			} else {
+				licenceRegistration.validate(d[clientKey] ?: "").onSuccess {
+					loggedIn = true
+				}.onFailure {
+					loggedIn = false
+					dataStore.updateData { pref ->
+						pref.toMutablePreferences().apply {
+							set(activated, false)
+							set(clientKey, "")
+						}
+					}
+				}
+			}
+			if(d[sumupAccessToken] != null && !SumUp.isLogged) {
+				SumUp.login(d[sumupAccessToken]!!)
+			} else {
+				dataStore.updateData { pref ->
+					pref.toMutablePreferences().apply {
+						remove(sumupAccessToken)
+						remove(sumupRefreshToken)
+						remove(sumupExpire)
+					}
+				}
+			}
+		}
+	}
+	val savedItems = viewModel { SavedItemViewModel(dataBase) }
+	val priceList = viewModel { PriceListViewModel(dataBase) }
+	val commandViewModel = viewModel { CommandViewModel(dataBase, nearby) }
+	val serviceViewModel = viewModel { ServiceViewModel(dataBase, commandViewModel, savedItems) }
+	val slaveCommandViewModel = viewModel { SlaveCommandViewModel(nearby) }
+	LaunchedEffect(dataStore, loggedIn) {
+		dataStore.data.collect { d ->
+			if(loggedIn == true && d[clientKey] == "Apple" && d[demoInit] != true) {
+				dataStore.updateData {
+					it.toMutablePreferences().apply { set(demoInit, true) }
+				}
+				createDataForDemo(savedItems, priceList, serviceViewModel)
+			}
+		}
+	}
+	val displaySidePanel = windowSizeClass.isWidthAtLeast(SizeClass.EXPANDED) && windowSizeClass.isHeightAtLeast(
+		SizeClass.MEDIUM) || windowSizeClass.isWidthAtLeast(SizeClass.MEDIUM) && windowSizeClass.isHeightAtLeast(
+		SizeClass.EXPANDED)
+	val portrait = LocalWindowInfo.current.containerSize.let {
+		it.width < it.height
+	}
+	val cols = if(windowSizeClass.isWidthAtLeast(SizeClass.EXPANDED)) {
+		if(portrait) 5 else 4
+	} else if(windowSizeClass.isWidthAtLeast(SizeClass.MEDIUM)) {
+		if(portrait) 4 else 3
+	} else {
+		2
+	}
+	val navigationController = rememberNavController()
+	SumUp.snackBarState = snackBarState
+	AppTheme {
+		if(loggedIn == false) {
+			LoginScreen(dataStore, licenceRegistration)
+		} else if(loggedIn == null) {
+			LoadingScreen()
+		} else if (type == P2PType.OFFLINE || type == P2PType.MASTER) {
+			var items: PriceListWithItem? by remember { mutableStateOf(null) }
+			var prices: List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
+			LaunchedEffect(serviceViewModel.currentService) {
+				items = priceList.priceLists.find { it.priceList.idPriceList == serviceViewModel.currentService?.idPriceList }
+			}
+			LaunchedEffect(priceList, items) {
+				items?.let {
+					prices = priceList.getPriceListItems(it.priceList)
+				}
+			}
+			Scaffold(
+				topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
+				bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
+				floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
+				snackbarHost = { SnackbarHost(snackBarState) }
+			) {
+				Row(Modifier.padding(it)) {
+					if (displaySidePanel) {
+						SideBar(navigationController)
+					}
+					NavHost(
+						navigationController,
+						startDestination = if(savedItems.items.isEmpty()) Destination.ITEMS.route else if(priceList.priceLists.isEmpty()) Destination.PRICE_LIST.route else Destination.SERVICE.route,
+					) {
+						composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
+						composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
+							val id = backStackEntry.arguments?.read {
+								this.getStringOrNull("id")?.toLongOrNull()
+							} ?: 0L
+							ServiceDetailScreen(serviceViewModel, commandViewModel, savedItems, priceList, id)
+						}
+						composable(Destination.SERVICE_ADD.route) { ServiceAddScreen(priceList, serviceViewModel, navigationController) }
+						composable(Destination.SERVICE_COMMAND.route) { CommandScreen(cols, displaySidePanel, serviceViewModel, navigationController, priceList, commandViewModel, portrait) }
+						composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailScreen(commandViewModel, priceList, savedItems) }
+						composable(Destination.PRICE_LIST.route) { PriceListScreen(priceList, navigationController) }
+						composable(Destination.PRICE_LIST_ADD.route) { PriceListAddScreen(priceList, savedItems, navigationController) }
+						composable(Destination.PRICE_LIST_EDIT.route) { backStackEntry ->
+							val id = backStackEntry.arguments?.read {
+								this.getStringOrNull("id")?.toLongOrNull()
+							} ?: 0L
+							PriceListEditScreen(priceList, savedItems, navigationController, id, serviceViewModel, snackBarState, commandViewModel)
+						}
+						composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
+						composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
+						composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, {
+							savedItems.reload()
+							priceList.loadPriceLists()
+							serviceViewModel.reload()
+						}, nearby, dataBase, type, { type = it }, commandViewModel, slaveCommandViewModel ) }
+					}
+				}
+			}
+		} else {
+			Scaffold(
+				topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
+				floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, slaveCommandViewModel, null, emptyList()) } },
+			) {
+				Row(Modifier.padding(it)) {
+					if(type == P2PType.COMMAND_SLAVE) {
+						CommandSlaveScreen(slaveCommandViewModel, cols, displaySidePanel, portrait)
+					} else if(type == P2PType.KITCHEN_SLAVE) {
+						Text("Kitchen Slave")
+					}
+				}
+			}
+		}
+	}
 }
