@@ -21,3 +21,5 @@ fun WindowSizeClass.isWidthAtLeast(width: SizeClass): Boolean = when(width) {
 }
 
 expect fun Double.formatPrice(): String
+
+expect val os: String

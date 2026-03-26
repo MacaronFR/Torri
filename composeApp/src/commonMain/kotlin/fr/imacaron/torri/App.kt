@@ -156,7 +156,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
 	}
 	val savedItems = viewModel { SavedItemViewModel(dataBase) }
 	val priceList = viewModel { PriceListViewModel(dataBase) }
-	val commandViewModel = viewModel { CommandViewModel(dataBase, nearby) }
+	val commandViewModel = viewModel { CommandViewModel(dataBase, nearby, dataStore) }
 	val serviceViewModel = viewModel { ServiceViewModel(dataBase, commandViewModel, savedItems) }
 	val slaveCommandViewModel = viewModel { SlaveCommandViewModel(nearby) }
 	LaunchedEffect(dataStore, loggedIn) {

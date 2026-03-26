@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.Nearby.Type
+import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
 import fr.imacaron.torri.data.ItemEntity
@@ -68,6 +69,7 @@ class SlaveCommandViewModel(
 				"history" -> receiveHistory(data)
 				"commandDetail" -> receiveHistoryDetail(data)
 				"removeFromHistory" -> masterRemoveFromHistory(data.toLong())
+				"sumupLogin" -> sumupLogin(data)
 				else -> println("Unknown action: $action")
 			}
 		}
@@ -100,6 +102,10 @@ class SlaveCommandViewModel(
 
 	private fun masterRemoveFromHistory(id: Long) {
 		history.removeAll { it.idCommand == id }
+	}
+
+	private fun sumupLogin(data: String) {
+		SumUp.login(data)
 	}
 
 	var priceList by mutableStateOf<PriceListWithItem?>(null)

@@ -141,16 +141,17 @@ class MainActivity : ComponentActivity() {
 			}
 		}
 		if(requestCode == 2 && data != null) {
-			val data = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 				data.extras?.getParcelable(SumUpAPI.Response.TX_INFO, TransactionInfo::class.java)
 			} else {
 				@Suppress("DEPRECATION")
 				data.extras?.getParcelable(SumUpAPI.Response.TX_INFO)
-			}!!
-			sumUpOnResult(CardTransactionInfo(
-				data.amount,
-				data.status
-			))
+			}?.let { data ->
+				sumUpOnResult(CardTransactionInfo(
+					data.amount,
+					data.status
+				))
+			}
 		}
 	}
 

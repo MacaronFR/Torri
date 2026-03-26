@@ -27,3 +27,5 @@ fun NSData.toByteArray(): ByteArray = ByteArray(this.length.toInt()).apply {
 actual fun Double.formatPrice(): String {
 	return NSString().stringByAppendingFormat("%.2f", this)
 }
+
+actual val os: String = "iOS"

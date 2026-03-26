@@ -30,7 +30,9 @@ import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
+import fr.imacaron.torri.os
 import fr.imacaron.torri.viewmodel.BaseCommandViewModel
+import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -65,6 +67,9 @@ fun PayementDialog(onDismiss: () -> Unit, commandViewModel: BaseCommandViewModel
 				TextButton({
 					if(payementMethod.isNotEmpty()) {
 						if(payementMethod == "SUMUP" && SumUp.isLogged) {
+							if(os == "iOS" && commandViewModel is SlaveCommandViewModel) {
+								onDismiss()
+							}
 							SumUp.pay(commandViewModel.totalPrice, commandViewModel.command.toMap(), items, prices)
 							coroutineScope.launch {
 								val info = SumUp.transactionInfo.receive()

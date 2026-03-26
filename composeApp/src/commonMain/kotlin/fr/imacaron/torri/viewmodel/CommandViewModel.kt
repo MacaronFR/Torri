@@ -1,12 +1,16 @@
 package fr.imacaron.torri.viewmodel
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.viewModelScope
 import fr.imacaron.torri.Nearby
+import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.CommandPriceListItemEntity
 import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
 import fr.imacaron.torri.data.ServiceEntity
+import fr.imacaron.torri.sumupAccessToken
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
@@ -16,7 +20,8 @@ import kotlin.collections.set
 
 class CommandViewModel(
 	private val db: AppDataBase,
-	private val nearby: Nearby
+	private val nearby: Nearby,
+	private val datastore: DataStore<Preferences>
 ): BaseCommandViewModel() {
 	fun startMasterCommand() {
 		viewModelScope.launch {
@@ -31,6 +36,11 @@ class CommandViewModel(
 					sendDataTo("priceList:${Json.encodeToString(priceList)}".encodeToByteArray(), device.id)
 					val prices = db.priceListItemDao().getAlByPriceList(priceList?.priceList?.idPriceList ?: return@let)
 					sendDataTo("prices:${Json.encodeToString(prices)}".encodeToByteArray(), device.id)
+					if(SumUp.isLogged) {
+						datastore.data.collect { d ->
+							sendDataTo("sumupLogin:${d[sumupAccessToken]}".encodeToByteArray(), device.id)
+						}
+					}
 				}
 			}
 		}
