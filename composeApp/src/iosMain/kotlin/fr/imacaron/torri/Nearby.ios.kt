@@ -158,6 +158,7 @@ class Nearbyios: Nearby() {
 
 	private fun receiveData(channel: Channel<Message>) {
 		nearbySwift.receiveDataWithCompletionHandler { data, _ ->
+			data?.let { channel.trySend(Message(it.message.toByteArray(), it.id)) }
 			receiveData(channel)
 		}
 	}

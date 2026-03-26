@@ -18,5 +18,5 @@ fun CommandDetailScreen(commandViewModel: CommandViewModel, priceListViewModel: 
 		Text("Erreur")
 		return
 	}
-	CommandList(commandViewModel.history, commandViewModel, priceList.priceList, savedItemsViewModel)
+	CommandList(commandViewModel.history, commandViewModel, priceList.priceList, savedItemsViewModel.items)
 }

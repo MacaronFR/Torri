@@ -7,6 +7,7 @@ import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.CommandPriceListItemEntity
 import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
 import fr.imacaron.torri.data.ServiceEntity
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -58,6 +59,9 @@ class CommandViewModel(
 			when(action) {
 				"payCommand" -> paySlave(data, message.id)
 				"payCommandDetail" -> paySlaveDetail(data)
+				"getHistory" -> sendHistory(message.id)
+				"getCommandDetail" -> sendCommandDetail(data.toLong(), message.id)
+				"removeHistory" -> removeFromHistory(data.toLong())
 				else -> println("Unknown action: $action")
 			}
 		}
@@ -72,6 +76,23 @@ class CommandViewModel(
 	suspend fun paySlaveDetail(data: String) {
 		val commandDetail: List<CommandPriceListItemEntity> = Json.decodeFromString(data)
 		db.commandPriceListItemDao().insertAll(commandDetail)
+	}
+
+	private suspend fun sendHistory(senderId: String) {
+		service?.let { s ->
+			val history = db.commandDao().getByService(s.idService)
+			nearby.sendDataTo("history:${Json.encodeToString(history)}".encodeToByteArray(), senderId)
+		}
+	}
+
+	private suspend fun sendCommandDetail(commandId: Long, senderId: String) {
+		val command = db.commandDao().getById(commandId) ?: return
+		nearby.sendDataTo("commandDetail:${Json.encodeToString(loadCommandDetail(command))}".encodeToByteArray(), senderId)
+	}
+
+	private suspend fun removeFromHistory(commandId: Long) {
+		val command = db.commandDao().getById(commandId) ?: return
+		removeFromHistory(command)
 	}
 
 	override var service: ServiceEntity?
@@ -105,7 +126,13 @@ class CommandViewModel(
 		viewModelScope.launch {
 			db.commandDao().delete(command.idCommand)
 		}
-
+		if(nearby.advertising) {
+			nearby.connectedList.forEach {
+				if(it.type == Nearby.Type.SLAVE_COMMAND) {
+					nearby.sendDataTo("removeFromHistory:${command.idCommand}".encodeToByteArray(), it.id)
+				}
+			}
+		}
 	}
 
 	override fun pay(method: String) {

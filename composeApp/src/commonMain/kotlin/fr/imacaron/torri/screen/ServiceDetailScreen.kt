@@ -19,5 +19,5 @@ fun ServiceDetailScreen(serviceViewModel: ServiceViewModel, commandViewModel: Co
 	LaunchedEffect(serviceViewModel, service) {
 		commands.addAll(serviceViewModel.loadServiceCommand(service))
 	}
-	CommandList(commands, commandViewModel, priceList.priceList, savedItemsViewModel)
+	CommandList(commands, commandViewModel, priceList.priceList, savedItemsViewModel.items)
 }

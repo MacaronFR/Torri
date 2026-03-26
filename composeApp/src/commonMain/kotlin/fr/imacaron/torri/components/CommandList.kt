@@ -33,6 +33,7 @@ import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.ShieldQuestion
 import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
+import fr.imacaron.torri.data.ItemEntity
 import fr.imacaron.torri.data.PriceListEntity
 import fr.imacaron.torri.viewmodel.BaseCommandViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
@@ -45,7 +46,7 @@ fun CommandList(
 	commands: List<CommandEntity>,
 	commandViewModel: BaseCommandViewModel,
 	priceList: PriceListEntity,
-	savedItemsViewModel: SavedItemViewModel
+	items: List<ItemEntity>
 ) {
 	if (commands.isEmpty()) {
 		Text(
@@ -95,7 +96,7 @@ fun CommandList(
 								if (it.priceListItem == null) {
 									Text("Produit inconnu")
 								} else {
-									savedItemsViewModel.items.find { i -> i.idItem == it.priceListItem.idItem }
+									items.find { i -> i.idItem == it.priceListItem.idItem }
 										?.let { item ->
 											Image(
 												painterResource(Res.allDrawableResources[item.image]!!),

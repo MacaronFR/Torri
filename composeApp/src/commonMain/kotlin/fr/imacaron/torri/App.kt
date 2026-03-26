@@ -1,5 +1,6 @@
 package fr.imacaron.torri
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.PriceListWithItem
 import fr.imacaron.torri.screen.CommandDetailScreen
+import fr.imacaron.torri.screen.CommandDetailSlaveScreen
 import fr.imacaron.torri.screen.CommandScreen
 import fr.imacaron.torri.screen.CommandSlaveScreen
 import fr.imacaron.torri.screen.ConfScreen
@@ -70,7 +72,8 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 	SERVICE_DETAIL("service/detail/{id}", "Détail du service", Lucide.BookOpen),
 	SERVICE_ADD("service/add", "Ajouter un service", Lucide.BookOpen),
 	SERVICE_COMMAND("service/command", "Commande", Lucide.Command),
-	SERVICE_COMMAND_DETAIL("service/command/detail", "Détail des commandes", Lucide.Command),
+	SERVICE_COMMAND_SLAVE("service/command/slave", "Commande", Lucide.Command),
+	SERVICE_COMMAND_DETAIL("service/command/detail/{id}", "Détail des commandes", Lucide.Command),
 	PRICE_LIST("pricelist", "Cartes", Lucide.SquareMenu),
 	PRICE_LIST_ADD("pricelist/add", "Ajouter une carte", Lucide.SquareMenu),
 	PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier une carte", Lucide.SquareMenu),
@@ -180,6 +183,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
 		2
 	}
 	val navigationController = rememberNavController()
+	val slaveNavigationController = rememberNavController()
 	SumUp.snackBarState = snackBarState
 	AppTheme {
 		if(loggedIn == false) {
@@ -241,14 +245,13 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
 			}
 		} else{
 			Scaffold(
-				topBar = { AppBar(navigationController, serviceViewModel, commandViewModel, slaveCommandViewModel) },
+				topBar = { AppBar(slaveNavigationController, serviceViewModel, commandViewModel, slaveCommandViewModel) },
 				floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, slaveCommandViewModel, null, emptyList()) } },
 			) {
-				Row(Modifier.padding(it)) {
-					if(slaveCommandViewModel.isOnline) {
-						CommandSlaveScreen(slaveCommandViewModel, cols, displaySidePanel, portrait)
-					} else if(false) {
-						Text("Kitchen Slave")
+				Column(Modifier.padding(it)) {
+					NavHost(slaveNavigationController, startDestination = Destination.SERVICE_COMMAND_SLAVE.route) {
+						composable(Destination.SERVICE_COMMAND_SLAVE.route) { CommandSlaveScreen(slaveCommandViewModel, cols, displaySidePanel, portrait) }
+						composable(Destination.SERVICE_COMMAND_DETAIL.route) { CommandDetailSlaveScreen(slaveCommandViewModel) }
 					}
 				}
 			}

@@ -52,6 +52,7 @@ class SlaveCommandViewModel(
 		get() = nearby.discovering || nearby.connecting != null || nearby.connected != null
 
 	private val commandIdChannel = Channel<Long>(2, BufferOverflow.SUSPEND)
+	private val historyDetailChannel = Channel<List<CommandPriceListItemsWithPriceListItem>>(2, BufferOverflow.SUSPEND)
 
 	@OptIn(DelicateCoroutinesApi::class)
 	suspend fun receiver() {
@@ -64,6 +65,9 @@ class SlaveCommandViewModel(
 				"priceList" -> receivePriceList(data)
 				"prices" -> receivePrices(data)
 				"commandId" -> commandIdChannel.send(data.toLong())
+				"history" -> receiveHistory(data)
+				"commandDetail" -> receiveHistoryDetail(data)
+				"removeFromHistory" -> masterRemoveFromHistory(data.toLong())
 				else -> println("Unknown action: $action")
 			}
 		}
@@ -90,6 +94,14 @@ class SlaveCommandViewModel(
 		}
 	}
 
+	private suspend fun receiveHistoryDetail(data: String) {
+		historyDetailChannel.send(Json.decodeFromString<List<CommandPriceListItemsWithPriceListItem>>(data))
+	}
+
+	private fun masterRemoveFromHistory(id: Long) {
+		history.removeAll { it.idCommand == id }
+	}
+
 	var priceList by mutableStateOf<PriceListWithItem?>(null)
 
 	val items = mutableStateListOf<ItemEntity>()
@@ -109,15 +121,19 @@ class SlaveCommandViewModel(
 	}
 
 	override fun loadHistory() {
-		//Load from master
+		nearby.sendData("getHistory:svp".toByteArray())
+	}
+
+	fun receiveHistory(data: String) {
+		history.addAll(Json.decodeFromString<List<CommandEntity>>(data))
 	}
 
 	override fun removeFromHistory(command: CommandEntity) {
-		// Ask master to remove from history
+		nearby.sendData("removeHistory:${command.idCommand}".toByteArray())
 	}
 
 	override suspend fun loadCommandDetail(command: CommandEntity): List<CommandPriceListItemsWithPriceListItem> {
-		// Ask master for command detail
-		return emptyList()
+		nearby.sendData("getCommandDetail:${command.idCommand}".toByteArray())
+		return historyDetailChannel.receive()
 	}
 }

@@ -90,6 +90,9 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, com
 					Icon(Lucide.ServerOff, "Fermer la connexion")
 				}
 			} else if(slaveCommandViewModel.isOnline) {
+				IconButton({ navController.navigate(Destination.SERVICE_COMMAND_DETAIL.route) }) {
+					Icon(Lucide.BookText, "Détails des commandes", tint = MaterialTheme.colorScheme.primary)
+				}
 				IconButton({
 					slaveCommandViewModel.disconnect()
 				}) {
