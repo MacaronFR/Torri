@@ -48,6 +48,9 @@ class SlaveCommandViewModel(
 		nearby.disconnectAll()
 	}
 
+	val isOnline: Boolean
+		get() = nearby.discovering || nearby.connecting != null || nearby.connected != null
+
 	private val commandIdChannel = Channel<Long>(2, BufferOverflow.SUSPEND)
 
 	@OptIn(DelicateCoroutinesApi::class)

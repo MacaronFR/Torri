@@ -37,10 +37,10 @@ import com.composables.icons.lucide.LogIn
 import com.composables.icons.lucide.LogOut
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Nearby
-import fr.imacaron.torri.P2PType
 import fr.imacaron.torri.SumUp
 import fr.imacaron.torri.activated
 import fr.imacaron.torri.clientKey
+import fr.imacaron.torri.components.MultiDeviceConf
 import fr.imacaron.torri.components.SyncDialog
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.exportDatabase
@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase, type: P2PType, setType: (P2PType) -> Unit, commandViewModel: CommandViewModel, slaveCommandViewModel: SlaveCommandViewModel) {
+fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase, commandViewModel: CommandViewModel, slaveCommandViewModel: SlaveCommandViewModel) {
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
@@ -201,47 +201,7 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 				syncDialog = false
 			}
 		}
-		Text(
-			"Connecter des appareils pour prendre des commandes",
-			Modifier.padding(top = 8.dp),
-			style = MaterialTheme.typography.titleMedium
-		)
-		if(!nearby.advertising && !nearby.discovering) {
-			Card(Modifier.fillMaxWidth()) {
-				TextButton(
-					{
-						setType(P2PType.MASTER)
-						commandViewModel.startMasterCommand()
-					},
-					Modifier.fillMaxWidth()
-				) {
-					Text("Démarrer en tant qu'appareil principal")
-				}
-				TextButton({ setType(P2PType.COMMAND_SLAVE); slaveCommandViewModel.startSlaveCommand() }, Modifier.fillMaxWidth()) {
-					Text("Démarrer en tant qu'appareil de commande")
-				}
-				TextButton({ setType(P2PType.KITCHEN_SLAVE); nearby.startDiscovery(true, Nearby.Type.SLAVE_KITCHEN) }, Modifier.fillMaxWidth()) {
-					Text("Démarrer en tant qu'appareil de cuisine")
-				}
-			}
-		} else if(type == P2PType.MASTER) {
-			Card(Modifier.fillMaxWidth()) {
-				Column(Modifier.padding(8.dp)) {
-					Text("Appareil connectés: Total ${commandViewModel.connectedDevices.size}")
-					LazyColumn {
-						items(commandViewModel.connectedDevices) {
-							Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-								Text(it.name)
-								Text("Type: ${it.type}")
-								IconButton({ commandViewModel.disconnectDevice(it) }) {
-									Icon(Lucide.LogOut, "Se déconnecter")
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+		MultiDeviceConf(slaveCommandViewModel, commandViewModel)
 		Row(
 			Modifier.fillMaxWidth().padding(top = 8.dp),
 			horizontalArrangement = Arrangement.SpaceBetween,

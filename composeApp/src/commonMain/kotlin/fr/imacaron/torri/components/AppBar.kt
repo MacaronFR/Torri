@@ -25,15 +25,15 @@ import com.composables.icons.lucide.Save
 import com.composables.icons.lucide.Send
 import com.composables.icons.lucide.ServerOff
 import fr.imacaron.torri.Destination
-import fr.imacaron.torri.Nearby
-import fr.imacaron.torri.P2PType
 import fr.imacaron.torri.saveToFile
+import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
+import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, nearby: Nearby, type: P2PType, setType: (P2PType) -> Unit) {
+fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, commandViewModel: CommandViewModel, slaveCommandViewModel: SlaveCommandViewModel) {
 	var currentRoute by remember { mutableStateOf("") }
 	navController.addOnDestinationChangedListener { _, destination, _ ->
 		destination.route?.let { currentRoute = it }
@@ -83,25 +83,21 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, nea
 					}
 				}
 			}
-			if(type == P2PType.MASTER) {
+			if(commandViewModel.isOnline) {
 				IconButton({
-					setType(P2PType.OFFLINE)
-					nearby.stopAdvertising()
-					nearby.disconnectAll()
+					commandViewModel.disconnectAll()
 				}) {
 					Icon(Lucide.ServerOff, "Fermer la connexion")
 				}
-			} else if(type == P2PType.COMMAND_SLAVE) {
+			} else if(slaveCommandViewModel.isOnline) {
 				IconButton({
-					setType(P2PType.OFFLINE)
-					nearby.disconnectAll()
+					slaveCommandViewModel.disconnect()
 				}) {
 					Icon(Lucide.CloudOff, "Fermer la connexion")
 				}
-			} else if(type == P2PType.KITCHEN_SLAVE) {
+			} else if(false) {
 				IconButton({
-					setType(P2PType.OFFLINE)
-					nearby.disconnectAll()
+
 				}) {
 					Icon(Lucide.CloudOff, "Fermer la connexion")
 				}

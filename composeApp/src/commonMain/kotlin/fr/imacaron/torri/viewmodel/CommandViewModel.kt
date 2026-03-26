@@ -46,6 +46,9 @@ class CommandViewModel(
 		nearby.disconnectAll()
 	}
 
+	val isOnline: Boolean
+		get() = nearby.advertising
+
 	@OptIn(DelicateCoroutinesApi::class)
 	suspend fun receiver() {
 		val receiverChannel = nearby.startReceive()

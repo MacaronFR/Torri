@@ -86,19 +86,11 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 	}
 }
 
-enum class P2PType {
-	OFFLINE,
-	MASTER,
-	COMMAND_SLAVE,
-	KITCHEN_SLAVE
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass, client: HttpClient, nearby: Nearby) {
 	var reloadConfScreen by remember { mutableStateOf(false) }
 	val snackBarState = remember { SnackbarHostState() }
-	var type by remember { mutableStateOf(P2PType.OFFLINE) }
 	SumUp.onLogin = { isLogged ->
 		if(!isLogged) {
 			dataStore.data.collect {
@@ -194,7 +186,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
 			LoginScreen(dataStore, licenceRegistration)
 		} else if(loggedIn == null) {
 			LoadingScreen()
-		} else if (type == P2PType.OFFLINE || type == P2PType.MASTER) {
+		} else if (!slaveCommandViewModel.isOnline) {
 			var items: PriceListWithItem? by remember { mutableStateOf(null) }
 			var prices: List<PriceListItemEntity> by remember { mutableStateOf(emptyList()) }
 			LaunchedEffect(serviceViewModel.currentService) {
@@ -206,7 +198,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
 				}
 			}
 			Scaffold(
-				topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
+				topBar = { AppBar(navigationController, serviceViewModel, commandViewModel, slaveCommandViewModel) },
 				bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
 				floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
 				snackbarHost = { SnackbarHost(snackBarState) }
@@ -243,19 +235,19 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
 							savedItems.reload()
 							priceList.loadPriceLists()
 							serviceViewModel.reload()
-						}, nearby, dataBase, type, { type = it }, commandViewModel, slaveCommandViewModel ) }
+						}, nearby, dataBase, commandViewModel, slaveCommandViewModel ) }
 					}
 				}
 			}
-		} else {
+		} else{
 			Scaffold(
-				topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
+				topBar = { AppBar(navigationController, serviceViewModel, commandViewModel, slaveCommandViewModel) },
 				floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, slaveCommandViewModel, null, emptyList()) } },
 			) {
 				Row(Modifier.padding(it)) {
-					if(type == P2PType.COMMAND_SLAVE) {
+					if(slaveCommandViewModel.isOnline) {
 						CommandSlaveScreen(slaveCommandViewModel, cols, displaySidePanel, portrait)
-					} else if(type == P2PType.KITCHEN_SLAVE) {
+					} else if(false) {
 						Text("Kitchen Slave")
 					}
 				}
