@@ -4,8 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import fr.imacaron.torri.ios.NearbySwift
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalForeignApi::class)
 class Nearbyios: Nearby() {
@@ -22,12 +27,22 @@ class Nearbyios: Nearby() {
 		nearbySwift.onConnectionStateChange = { state, endpointId ->
 			when(state) {
 				"CONNECTING" -> {
-					connecting = Device(endpointId ?: "", endpointId ?: "")
+					connecting = discoveredDevices.find { it.id == endpointId } ?: Device(endpointId ?: "", endpointId ?: "")
 				}
 				"CONNECTED" -> {
-					println("CONNECTED")
-					connected = connecting
+					val device = if(star && master) {
+						connecting?.let { connectedList.add(it); it }
+					} else {
+						connected = connecting
+						connected?.let {
+							sendDataTo("Type:${this.type}".toByteArray(), it.id)
+						}
+						connecting
+					}
 					connecting = null
+					device?.let {
+						onConnected(it)
+					}
 				}
 				"DISCONNECTED" -> {
 					connected = null
@@ -38,12 +53,33 @@ class Nearbyios: Nearby() {
 				}
 			}
 		}
+		nearbySwift.onReceiveData = { data, endpointId ->
+			val message = data?.toByteArray()?.decodeToString() ?: ""
+			if(message.startsWith("Type:")) {
+				if(master) {
+					connectedList.find { it.id == endpointId }?.let {
+						connectedList.remove(it)
+						it.type = Type.valueOf(message.substringAfter("Type:"))
+						connectedList.add(it)
+					}
+				} else {
+					connected?.let {
+						it.type = Type.valueOf(message.substringAfter("Type:"))
+					}
+				}
+				false
+			} else {
+				true
+			}
+		}
 	}
 
 	@OptIn(ExperimentalForeignApi::class)
-	override fun startAdvertising() {
+	override fun startAdvertising(star: Boolean) {
+		this.star = star
 		master = true
-		nearbySwift.startAdvertising()
+		type = Type.MASTER
+		nearbySwift.startAdvertisingWithStar(star)
 		advertising = true
 	}
 
@@ -54,9 +90,11 @@ class Nearbyios: Nearby() {
 	}
 
 	@OptIn(ExperimentalForeignApi::class)
-	override fun startDiscovery() {
+	override fun startDiscovery(star: Boolean, type: Type) {
+		this.star = star
 		master = false
-		nearbySwift.startDiscovery()
+		nearbySwift.startDiscoveryWithStar(star)
+		this.type = type
 		discovering = true
 	}
 
@@ -72,28 +110,64 @@ class Nearbyios: Nearby() {
 		nearbySwift.connectWithEndpointId(device.id)
 	}
 
-	override fun disconnect() {
-		val id = connecting?.id ?: connected?.id ?: return
-		nearbySwift.disconnectWithEndpointId(id)
+	override fun disconnectDevice(id: String) {
+		if(connected?.id == id || connecting?.id == id) {
+			nearbySwift.disconnectWithEndpointId(id)
+			connected = null
+			connecting = null
+		} else if(connectedList.find { it.id == id } != null) {
+			nearbySwift.disconnectWithEndpointId(id)
+			connectedList.removeAll { it.id == id }
+		}
+	}
+
+	override fun disconnectAll() {
+		(connecting?.id ?: connected?.id)?.let { id ->
+			nearbySwift.disconnectWithEndpointId(id)
+		}
+		connectedList.forEach {
+			nearbySwift.disconnectWithEndpointId(it.id)
+		}
 		connecting = null
 		connected = null
+		connectedList.clear()
 		stopDiscovery()
 		stopAdvertising()
 	}
 
 	override fun sendData(data: ByteArray) {
-		if(connected == null || !master) {
+		println("send data ${connected?.id}")
+		if(connected == null) {
 			return
 		}
 		nearbySwift.sendDataWithData(data.toNSData(), connected!!.id)
 	}
 
+	override fun sendDataTo(data: ByteArray, id: String) {
+		nearbySwift.sendDataWithData(data.toNSData(), id)
+	}
+
 	override suspend fun receiveData(): ByteArray? {
 		val channel = Channel<ByteArray>(1)
 		nearbySwift.receiveDataWithCompletionHandler { data, _ ->
-			data?.let { channel.trySend(it.toByteArray()) }
+			data?.let { channel.trySend(it.message.toByteArray()) }
 		}
 		return channel.receive()
+	}
+
+	override suspend fun startReceive(): Channel<Message> {
+		val channel = Channel<Message>(10)
+		receiveData(channel)
+		return channel
+	}
+
+	private fun receiveData(channel: Channel<Message>) {
+		nearbySwift.receiveDataWithCompletionHandler { data, error ->
+			println(data)
+			data?.let { println(it.message) }
+			data?.let { channel.trySend(Message(it.message.toByteArray(), it.id)) }
+			receiveData(channel)
+		}
 	}
 
 	override var advertising by mutableStateOf(false)

@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.serialization.Serializable
 
 @Dao
 interface CommandDao {
@@ -24,6 +25,7 @@ interface CommandDao {
 }
 
 @Entity
+@Serializable
 data class CommandEntity(
 	@PrimaryKey(autoGenerate = true) val idCommand: Long = 0L,
 	val idService: Long,

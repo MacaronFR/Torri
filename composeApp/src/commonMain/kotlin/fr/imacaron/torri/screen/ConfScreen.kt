@@ -5,10 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
@@ -47,13 +50,19 @@ import fr.imacaron.torri.data.importDatabaseFromFile
 import fr.imacaron.torri.sumupAccessToken
 import fr.imacaron.torri.sumupExpire
 import fr.imacaron.torri.sumupRefreshToken
+import fr.imacaron.torri.viewmodel.CommandViewModel
+import fr.imacaron.torri.viewmodel.PriceListViewModel
+import fr.imacaron.torri.viewmodel.ServiceViewModel
+import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 
 @Composable
-fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase, setType: (P2PType) -> Unit) {
+fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostState, reloadConfScreen: Boolean, doReload: () -> Unit, nearby: Nearby, db: AppDataBase, type: P2PType, setType: (P2PType) -> Unit, commandViewModel: CommandViewModel, slaveCommandViewModel: SlaveCommandViewModel) {
 	val lifecycleOwner = LocalLifecycleOwner.current
 	val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 	val scope = rememberCoroutineScope()
@@ -201,15 +210,40 @@ fun ConfScreen(dataStore: DataStore<Preferences>, snackBarState: SnackbarHostSta
 			Modifier.padding(top = 8.dp),
 			style = MaterialTheme.typography.titleMedium
 		)
-		Card(Modifier.fillMaxWidth()) {
-			TextButton( { setType(P2PType.MASTER); nearby.startAdvertising(true) }, Modifier.fillMaxWidth()) {
-				Text("Démarrer en tant qu'appareil principal")
+		if(!nearby.advertising && !nearby.discovering) {
+			Card(Modifier.fillMaxWidth()) {
+				TextButton(
+					{
+						setType(P2PType.MASTER)
+						commandViewModel.startMasterCommand()
+					},
+					Modifier.fillMaxWidth()
+				) {
+					Text("Démarrer en tant qu'appareil principal")
+				}
+				TextButton({ setType(P2PType.COMMAND_SLAVE); slaveCommandViewModel.startSlaveCommand() }, Modifier.fillMaxWidth()) {
+					Text("Démarrer en tant qu'appareil de commande")
+				}
+				TextButton({ setType(P2PType.KITCHEN_SLAVE); nearby.startDiscovery(true, Nearby.Type.SLAVE_KITCHEN) }, Modifier.fillMaxWidth()) {
+					Text("Démarrer en tant qu'appareil de cuisine")
+				}
 			}
-			TextButton({ setType(P2PType.COMMAND_SLAVE); nearby.startDiscovery(true) }, Modifier.fillMaxWidth()) {
-				Text("Démarrer en tant qu'appareil de commande")
-			}
-			TextButton({ setType(P2PType.KITCHEN_SLAVE); nearby.startDiscovery(true) }, Modifier.fillMaxWidth()) {
-				Text("Démarrer en tant qu'appareil de cuisine")
+		} else if(type == P2PType.MASTER) {
+			Card(Modifier.fillMaxWidth()) {
+				Column(Modifier.padding(8.dp)) {
+					Text("Appareil connectés: Total ${commandViewModel.connectedDevices.size}")
+					LazyColumn {
+						items(commandViewModel.connectedDevices) {
+							Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+								Text(it.name)
+								Text("Type: ${it.type}")
+								IconButton({ commandViewModel.disconnectDevice(it) }) {
+									Icon(Lucide.LogOut, "Se déconnecter")
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		Row(

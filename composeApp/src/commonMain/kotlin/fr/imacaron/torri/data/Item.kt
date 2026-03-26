@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import kotlinx.serialization.Serializable
 
 @Dao
 interface ItemDao {
@@ -20,6 +21,7 @@ interface ItemDao {
 }
 
 @Entity
+@Serializable
 data class ItemEntity(
 	@PrimaryKey(autoGenerate = true) val idItem: Long = 0L,
 	val name: String,

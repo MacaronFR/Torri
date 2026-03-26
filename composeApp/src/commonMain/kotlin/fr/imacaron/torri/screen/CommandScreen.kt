@@ -35,6 +35,9 @@ import androidx.navigation.NavController
 import com.composables.icons.lucide.CheckCheck
 import com.composables.icons.lucide.Lucide
 import fr.imacaron.torri.Destination
+import fr.imacaron.torri.Nearby
+import fr.imacaron.torri.components.CommandDetail
+import fr.imacaron.torri.components.ItemSelection
 import fr.imacaron.torri.components.ItemView
 import fr.imacaron.torri.components.PayementDialog
 import fr.imacaron.torri.data.ItemEntity
@@ -48,10 +51,7 @@ import fr.imacaron.torri.viewmodel.ServiceViewModel
 @Composable
 fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: ServiceViewModel, navController: NavController, priceListViewModel: PriceListViewModel, commandViewModel: CommandViewModel, portrait: Boolean) {
 	commandViewModel.loadService()
-	val service = serviceViewModel.currentService
-	if(service == null) {
-		return
-	}
+	val service = serviceViewModel.currentService ?: return
 	commandViewModel.service = service
 	val priceList = priceListViewModel.priceLists.find { it.priceList.idPriceList == service.idPriceList }
 	if(priceList == null) {
@@ -79,72 +79,6 @@ fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: Servic
 		Column(Modifier.padding(4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 			CommandDetail(commandViewModel, items, priceList, prices, portrait, displaySidePanel)
 			ItemSelection(cols, items, prices, priceList, commandViewModel)
-		}
-	}
-}
-
-@Composable
-fun CommandDetail(commandViewModel: CommandViewModel, items: List<ItemEntity>, priceList: PriceListWithItem, prices: List<PriceListItemEntity>, portrait: Boolean, displaySidePanel: Boolean, modifier: Modifier = Modifier) {
-	var expand by remember { mutableStateOf(false) }
-	Card(modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { expand = !expand }.animateContentSize().heightIn(32.dp).run { if(!portrait) this.fillMaxHeight() else this }) {
-		Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-			if(commandViewModel.totalItem > 1) {
-				Text("${commandViewModel.totalItem} Articles", style = MaterialTheme.typography.headlineSmall)
-			} else {
-				Text("${commandViewModel.totalItem} Article", style = MaterialTheme.typography.headlineSmall)
-			}
-			Text("Total ${commandViewModel.totalPrice.formatPrice()}${priceList.priceList.currency}", style = MaterialTheme.typography.headlineSmall)
-		}
-		if(displaySidePanel || expand) {
-			Column(Modifier.weight(1f).scrollable(rememberScrollState(), Orientation.Vertical)) {
-				if(commandViewModel.command.isEmpty()) {
-					Text("Aucun article")
-				} else {
-					commandViewModel.command.forEach { (priceListItemId, quantity) ->
-						prices.find { it.idPriceListItem == priceListItemId }?.let { priceListItem ->
-							Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-								Text("$quantity", style = MaterialTheme.typography.titleLarge)
-								Text(items.find { it.idItem == priceListItem.idItem }?.name ?: "Inconnu", style = MaterialTheme.typography.titleLarge)
-								Spacer(Modifier.weight(1f))
-								Text("${priceListItem.price.times(quantity).formatPrice()} ${priceList.priceList.currency}", style = MaterialTheme.typography.titleMedium)
-							}
-						}
-					}
-				}
-			}
-		}
-		if(displaySidePanel) {
-			var payementDialog by remember { mutableStateOf(false) }
-			Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), horizontalArrangement = Arrangement.End) {
-				Button({ payementDialog = true }) {
-					Icon(Lucide.CheckCheck, "Payer")
-					Text("Payer")
-				}
-			}
-			if(payementDialog) {
-				PayementDialog({ payementDialog = false }, commandViewModel, priceList, prices)
-			}
-		}
-	}
-}
-
-@Composable
-fun ItemSelection(cols: Int, items: List<ItemEntity>, prices: List<PriceListItemEntity>, priceList: PriceListWithItem, commandViewModel: CommandViewModel, modifier: Modifier = Modifier) {
-	LazyVerticalGrid(
-		GridCells.Fixed(cols),
-		verticalArrangement = Arrangement.spacedBy(8.dp),
-		horizontalArrangement = Arrangement.spacedBy(8.dp),
-		modifier = modifier
-	) {
-		items(items) { item ->
-			prices.find { it.idItem == item.idItem }?.let { price ->
-				ItemView(
-					item,
-					price.price,
-					priceList.priceList.currency,
-					{ commandViewModel.add(price) },
-					{ commandViewModel.remove(price) })
-			}
 		}
 	}
 }

@@ -57,6 +57,7 @@ import fr.imacaron.torri.viewmodel.CommandViewModel
 import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import fr.imacaron.torri.viewmodel.ServiceViewModel
+import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import io.ktor.client.HttpClient
 import io.ktor.websocket.Frame
 
@@ -163,8 +164,9 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
     }
     val savedItems = viewModel { SavedItemViewModel(dataBase) }
     val priceList = viewModel { PriceListViewModel(dataBase) }
-    val commandViewModel = viewModel { CommandViewModel(dataBase) }
+    val commandViewModel = viewModel { CommandViewModel(dataBase, nearby) }
     val serviceViewModel = viewModel { ServiceViewModel(dataBase, commandViewModel, savedItems) }
+    val slaveCommandViewModel = viewModel { SlaveCommandViewModel(nearby) }
     LaunchedEffect(dataStore, loggedIn) {
         dataStore.data.collect { d ->
             if(loggedIn == true && d[clientKey] == "Apple" && d[demoInit] != true) {
@@ -207,7 +209,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                 }
             }
             Scaffold(
-                topBar = { AppBar(navigationController, serviceViewModel, type, { type = it }) },
+                topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
                 bottomBar = { if (!displaySidePanel) { BottomBar(navigationController) } },
                 floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, commandViewModel, items, prices) } },
                 snackbarHost = { SnackbarHost(snackBarState) }
@@ -244,17 +246,18 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                             savedItems.reload()
                             priceList.loadPriceLists()
                             serviceViewModel.reload()
-                        }, nearby, dataBase, { type = it }) }
+                        }, nearby, dataBase, type, { type = it }, commandViewModel, slaveCommandViewModel ) }
                     }
                 }
             }
         } else {
             Scaffold(
-                topBar = { AppBar(navigationController, serviceViewModel, type, { type = it }) },
+                topBar = { AppBar(navigationController, serviceViewModel, nearby, type, { type = it }) },
+                floatingActionButton = { if (!displaySidePanel) { FAB(navigationController, slaveCommandViewModel, null, emptyList()) } },
             ) {
                 Row(Modifier.padding(it)) {
                     if(type == P2PType.COMMAND_SLAVE) {
-                        CommandSlaveScreen(nearby)
+                        CommandSlaveScreen(slaveCommandViewModel, cols, displaySidePanel, portrait)
                     } else if(type == P2PType.KITCHEN_SLAVE) {
                         Text("Kitchen Slave")
                     }

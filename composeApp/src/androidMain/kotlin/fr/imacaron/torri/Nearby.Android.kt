@@ -21,6 +21,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.launch
+import kotlin.emptyArray
 import com.google.android.gms.nearby.Nearby as GoogleNearby
 
 class NearbyAndroid(
@@ -43,6 +44,7 @@ class NearbyAndroid(
 	override fun startAdvertising(star: Boolean) {
 		this.star = star
 		master = true
+		type = Type.MASTER
 		activity.lifecycleScope.launch {
 			activity.checkPermission {
 				if(it) {
@@ -67,8 +69,10 @@ class NearbyAndroid(
 		advertising = false
 	}
 
-	override fun startDiscovery(star: Boolean) {
+	override fun startDiscovery(star: Boolean, type: Type) {
 		master = false
+		this.type = type
+		this.star = star
 		activity.lifecycleScope.launch {
 			activity.checkPermission {
 				if (it) {
@@ -104,18 +108,36 @@ class NearbyAndroid(
 			}
 	}
 
-	override fun disconnect() {
-		GoogleNearby.getConnectionsClient(activity).disconnectFromEndpoint(connected?.id ?: "")
+	override fun disconnectDevice(id: String) {
+		if(connected?.id == id || connecting?.id == id) {
+			GoogleNearby.getConnectionsClient(activity).disconnectFromEndpoint(id)
+			connected = null
+			connecting = null
+		} else {
+			connectedList.find { it.id == id }?.let {
+				GoogleNearby.getConnectionsClient(activity).disconnectFromEndpoint(id)
+				connectedList.remove(it)
+			}
+		}
+	}
+
+	override fun disconnectAll() {
+		(connected?.id ?: connecting?.id)?.let { id ->
+			GoogleNearby.getConnectionsClient(activity).disconnectFromEndpoint(id)
+		}
+		connectedList.forEach {
+			GoogleNearby.getConnectionsClient(activity).disconnectFromEndpoint(it.id)
+		}
 		connecting = null
 		connected = null
-		discovering = false
-		advertising = false
+		connectedList.clear()
 		stopDiscovery()
 		stopAdvertising()
+
 	}
 
 	override fun sendData(data: ByteArray) {
-		if(connected == null || !master) {
+		if (connected == null || (!master && !star)) {
 			return
 		}
 		val payload = Payload.fromBytes(data)
@@ -124,9 +146,17 @@ class NearbyAndroid(
 		}
 	}
 
+	override fun sendDataTo(data: ByteArray, id: String) {
+		GoogleNearby.getConnectionsClient(activity).sendPayload(id, Payload.fromBytes(data)).continueWith {
+
+		}
+	}
+
 	private var receiving = false
 	private var receivingPayload: Payload? = null
 	private var receivingUpdateChannel: Channel<PayloadTransferUpdate> = Channel(capacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+	private val receivingMessageChannel: Channel<Message> = Channel(capacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
 	override suspend fun receiveData(): ByteArray? {
 		if (receiving) {
@@ -140,6 +170,10 @@ class NearbyAndroid(
 		return receivingPayload?.asBytes()?.also { receivingPayload = null; receiving = false }
 	}
 
+	override suspend fun startReceive(): Channel<Message> {
+		return receivingMessageChannel
+	}
+
 	private inner class Callback: ConnectionLifecycleCallback() {
 		override fun onConnectionInitiated(endpointId: String, connectionInfo: ConnectionInfo) {
 			connecting = Device(connectionInfo.endpointName, endpointId)
@@ -149,11 +183,23 @@ class NearbyAndroid(
 		override fun onConnectionResult(endpointId: String, result: ConnectionResolution) {
 			when(result.status.statusCode) {
 				ConnectionsStatusCodes.STATUS_OK -> {
-					connected = connecting
+					val device = if(star && master) {
+						connecting?.let {
+							connectedList.add(it)
+							it
+						}
+					} else {
+						connected = connecting
+						sendDataTo("Type:${type}".toByteArray(), connected!!.id)
+						connecting
+					}
 					connecting = null
 					stopDiscovery()
 					if(!star) {
 						stopAdvertising()
+					}
+					device?.let {
+						onConnected(it)
 					}
 				}
 				ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED -> {
@@ -174,10 +220,13 @@ class NearbyAndroid(
 		}
 
 		override fun onDisconnected(endpointId: String) {
+			connectedList.removeIf { it.id == endpointId }
 			connected = null
 			connecting = null
-			stopDiscovery()
-			stopAdvertising()
+			if(!star) {
+				stopDiscovery()
+				stopAdvertising()
+			}
 		}
 	}
 
@@ -194,12 +243,38 @@ class NearbyAndroid(
 
 	private inner class InputCallback: PayloadCallback() {
 		override fun onPayloadReceived(endpointId: String, payload: Payload) {
-			receivingPayload = payload
+			println("onPayloadReceived")
+			if(star) {
+				println("star")
+				val message = payload.asBytes() ?: ByteArray(0)
+				if(message.decodeToString().startsWith("Type:")) {
+					if(master) {
+						connectedList.find { it.id == endpointId }?.let {
+							connectedList.remove(it)
+							it.type = Type.valueOf(message.decodeToString().substringAfter("Type:"))
+							connectedList.add(it)
+						}
+					} else {
+						connected?.let {
+							it.type = Type.valueOf(message.decodeToString().substringAfter("Type:"))
+						}
+					}
+				} else {
+					println("message channel, ")
+					println("message channel, ${message.decodeToString()}")
+					receivingMessageChannel.trySend(Message(message, endpointId))
+				}
+			} else {
+				println("not star")
+				receivingPayload = payload
+			}
 		}
 
 		override fun onPayloadTransferUpdate(endpointId: String, transferUpdate: PayloadTransferUpdate) {
-			receivingUpdateChannel.trySend(transferUpdate).onFailure {
-				it?.printStackTrace()
+			if(!star) {
+				receivingUpdateChannel.trySend(transferUpdate).onFailure {
+					it?.printStackTrace()
+				}
 			}
 		}
 

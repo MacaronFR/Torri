@@ -12,6 +12,7 @@ import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Serializable
 
 @Dao
 interface ServiceDao {
@@ -43,6 +44,7 @@ interface ServiceDao {
 }
 
 @Entity
+@Serializable
 data class ServiceEntity(
 	@PrimaryKey(autoGenerate = true) val idService: Long = 0L,
 	val date: LocalDate,

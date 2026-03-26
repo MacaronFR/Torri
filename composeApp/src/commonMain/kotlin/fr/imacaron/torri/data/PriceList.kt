@@ -11,6 +11,7 @@ import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Update
+import kotlinx.serialization.Serializable
 
 @Dao
 interface PriceListDao {
@@ -21,6 +22,9 @@ interface PriceListDao {
 	@Query("SELECT * FROM PriceListEntity")
 	suspend fun getAll(): List<PriceListWithItem>
 
+	@Query("SELECT * FROM PriceListEntity WHERE idPriceList = :id")
+	suspend fun getById(id: Long): PriceListWithItem?
+
 	@Delete
 	suspend fun delete(priceList: PriceListEntity): Int
 
@@ -29,12 +33,14 @@ interface PriceListDao {
 }
 
 @Entity
+@Serializable
 data class PriceListEntity(
 	@PrimaryKey(autoGenerate = true) val idPriceList: Long = 0L,
 	val name: String,
 	val currency: String
 )
 
+@Serializable
 data class PriceListWithItem(
 	@Embedded val priceList: PriceListEntity,
 	@Relation(

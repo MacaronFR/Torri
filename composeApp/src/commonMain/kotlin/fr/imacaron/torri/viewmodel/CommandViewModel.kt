@@ -1,30 +1,82 @@
 package fr.imacaron.torri.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import fr.imacaron.torri.Nearby
 import fr.imacaron.torri.data.AppDataBase
 import fr.imacaron.torri.data.CommandEntity
 import fr.imacaron.torri.data.CommandPriceListItemEntity
 import fr.imacaron.torri.data.CommandPriceListItemsWithPriceListItem
-import fr.imacaron.torri.data.PriceListItemEntity
 import fr.imacaron.torri.data.ServiceEntity
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import kotlin.collections.set
 
 class CommandViewModel(
 	private val db: AppDataBase,
-): ViewModel() {
-	val command = mutableStateMapOf<Long, Int>()
-	val prices = mutableStateMapOf<Long, Double>()
-	val history = mutableStateListOf<CommandEntity>()
+	private val nearby: Nearby
+): BaseCommandViewModel() {
+	fun startMasterCommand() {
+		viewModelScope.launch {
+			receiver()
+		}
+		nearby.onConnected = { device ->
+			viewModelScope.launch {
+				db.serviceDao().getAllNotDone().firstOrNull()?.let { s ->
+					service = s
+					sendDataTo("service:${Json.encodeToString(s)}".encodeToByteArray(), device.id)
+					val priceList = db.priceListDao().getById(s.idPriceList)
+					sendDataTo("priceList:${Json.encodeToString(priceList)}".encodeToByteArray(), device.id)
+					val prices = db.priceListItemDao().getAlByPriceList(priceList?.priceList?.idPriceList ?: return@let)
+					sendDataTo("prices:${Json.encodeToString(prices)}".encodeToByteArray(), device.id)
+				}
+			}
+		}
+		nearby.startAdvertising(true)
+	}
 
-	private var _service: ServiceEntity? by mutableStateOf(null)
-	var service: ServiceEntity?
+	val connectedDevices: List<Nearby.Device> = nearby.connectedList
+
+	fun disconnectDevice(device: Nearby.Device) {
+		nearby.disconnectDevice(device.id)
+	}
+
+	fun disconnectAll() {
+		nearby.disconnectAll()
+	}
+
+	@OptIn(DelicateCoroutinesApi::class)
+	suspend fun receiver() {
+		val receiverChannel = nearby.startReceive()
+		while(!receiverChannel.isClosedForReceive) {
+			val message = receiverChannel.receive()
+			val (action, data) = message.data.decodeToString().split(":", limit = 2)
+			when(action) {
+				"payCommand" -> paySlave(data, message.id)
+				"payCommandDetail" -> paySlaveDetail(data)
+				else -> println("Unknown action: $action")
+			}
+		}
+	}
+
+	suspend fun paySlave(data: String, senderId: String) {
+		println("Received: $data")
+		val command = Json.decodeFromString<CommandEntity?>(data) ?: return
+		val id = db.commandDao().insert(command)
+		println("Command inserted: $id")
+		nearby.sendDataTo("commandId:${id}".encodeToByteArray(), senderId)
+		println("Command id sent")
+	}
+
+	suspend fun paySlaveDetail(data: String) {
+		println("Received detail: $data")
+		val commandDetail: List<CommandPriceListItemEntity> = Json.decodeFromString(data)
+		db.commandPriceListItemDao().insertAll(commandDetail)
+		println("Command detail inserted")
+	}
+
+	override var service: ServiceEntity?
 		get() = _service
 		set(value) {
 			_service = value
@@ -33,13 +85,7 @@ class CommandViewModel(
 			loadService()
 		}
 
-	val totalItem: Int
-		get() = command.map { it.value }.sum()
-
-	val totalPrice: Double
-		get() = command.map { prices[it.key]!! * it.value }.sum()
-
-	fun loadHistory() {
+	override fun loadHistory() {
 		_service?.let { s ->
 			history.clear()
 			viewModelScope.launch {
@@ -48,29 +94,15 @@ class CommandViewModel(
 		}
 	}
 
-	fun loadService() {
-		_service?.let { s ->
+	fun loadService(): Job? {
+		return _service?.let { s ->
 			viewModelScope.launch {
 				db.priceListItemDao().getAlByPriceList(s.idPriceList).forEach { prices[it.idPriceListItem] = it.price }
 			}
 		}
 	}
 
-	fun add(item: PriceListItemEntity) {
-		command[item.idPriceListItem] = command[item.idPriceListItem]?.let { it + 1 } ?: 1
-	}
-
-	fun remove(item: PriceListItemEntity) {
-		command[item.idPriceListItem]?.let {
-			if(it > 1) {
-				command[item.idPriceListItem] = it - 1
-			} else {
-				command.remove(item.idPriceListItem)
-			}
-		}
-	}
-
-	fun removeFromHistory(command: CommandEntity) {
+	override fun removeFromHistory(command: CommandEntity) {
 		history.remove(command)
 		viewModelScope.launch {
 			db.commandDao().delete(command.idCommand)
@@ -78,51 +110,20 @@ class CommandViewModel(
 
 	}
 
-	fun pay(method: String) {
+	override fun pay(method: String) {
 		if(command.isEmpty()) {
 			return
 		}
-		_service?.let { s ->
+		prepareCommandEntity(method)?.let { commandEntity ->
 			viewModelScope.launch {
-				val id = db.commandDao().insert(
-					CommandEntity(
-						idService = s.idService,
-						payementMethod = method,
-						total = command.map { prices[it.key]!! * it.value }.sum(),
-						done = false
-					)
-				)
-				db.commandPriceListItemDao().insertAll(command.map { (idPriceListItem, quantity) ->
-					CommandPriceListItemEntity(idCommand = id, idPriceListItem = idPriceListItem, quantity = quantity)
-				})
+				val id = db.commandDao().insert(commandEntity)
+				db.commandPriceListItemDao().insertAll(prepareCommandDetail(id))
 				command.clear()
 			}
 		}
 	}
 
-	fun receiveCommand(command: CommandEntity, items: List<CommandPriceListItemEntity>) {
-		viewModelScope.launch {
-			db.commandDao().insert(command)
-			db.commandPriceListItemDao().insertAll(items)
-		}
-	}
-
-	fun setCommandDone(command: CommandEntity) {
-		viewModelScope.launch {
-			db.commandDao().update(command.copy(done = true))
-		}
-	}
-
-	suspend fun getCommandOfCurrentServiceForSlave(): Map<CommandEntity, List<CommandPriceListItemEntity>> {
-		val commands = service?.idService?.let {
-			db.commandDao().getByService(it)
-		}
-		return commands?.associate {
-			it to db.commandPriceListItemDao().getByCommand(it.idCommand).map { cpli -> cpli.commandPriceListItem }
-		} ?: emptyMap()
-	}
-
-	suspend fun loadCommandDetail(command: CommandEntity): List<CommandPriceListItemsWithPriceListItem> {
+	override suspend fun loadCommandDetail(command: CommandEntity): List<CommandPriceListItemsWithPriceListItem> {
 		return db.commandPriceListItemDao().getByCommand(command.idCommand)
 	}
 }

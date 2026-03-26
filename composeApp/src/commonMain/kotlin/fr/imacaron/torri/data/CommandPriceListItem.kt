@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
+import kotlinx.serialization.Serializable
 
 @Dao
 interface CommandPriceListItemDao {
@@ -23,6 +24,7 @@ interface CommandPriceListItemDao {
 }
 
 @Entity
+@Serializable
 data class CommandPriceListItemEntity(
 	@PrimaryKey(autoGenerate = true) val idCommandPriceListItem: Long = 0L,
 	val idCommand: Long,
@@ -30,6 +32,7 @@ data class CommandPriceListItemEntity(
 	var quantity: Int
 )
 
+@Serializable
 data class CommandPriceListItemsWithPriceListItem(
 	@Embedded val commandPriceListItem: CommandPriceListItemEntity,
 	@Relation(

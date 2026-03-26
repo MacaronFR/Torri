@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.serialization.Serializable
 
 @Dao
 interface PriceListItemDao {
@@ -27,6 +28,7 @@ interface PriceListItemDao {
 }
 
 @Entity
+@Serializable
 data class PriceListItemEntity(
 	@PrimaryKey(autoGenerate = true) val idPriceListItem: Long = 0L,
 	var idItem: Long,

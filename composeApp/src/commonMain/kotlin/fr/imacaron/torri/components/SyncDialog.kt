@@ -54,7 +54,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 				importDatabase(data, db)
 				withContext(Dispatchers.Main) {
 					onDismiss()
-					nearby.disconnect()
+					nearby.disconnectAll()
 					doReload()
 					snackbarState.showSnackbar("Transfert réussi", duration = SnackbarDuration.Long)
 				}
@@ -122,7 +122,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 					nearby.connecting?.let { device ->
 						Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
 							Text("Connexion à ${device.name}")
-							IconButton({ nearby.disconnect() }) {
+							IconButton({ nearby.disconnectAll() }) {
 								Icon(Lucide.X, "Annuler")
 							}
 						}
@@ -141,7 +141,7 @@ fun SyncDialog(display: Boolean, nearby: Nearby, db: AppDataBase, snackbarState:
 										Text("Transférer les données")
 									}
 								}
-								IconButton({ nearby.disconnect() }) {
+								IconButton({ nearby.disconnectAll() }) {
 									Icon(Lucide.LogOut, "Se déconnecter de l'appareil")
 								}
 							}

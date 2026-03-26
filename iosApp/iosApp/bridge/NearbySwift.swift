@@ -1,8 +1,19 @@
 import Foundation
 import NearbyConnections
 
+@objc(MessageSwift) class Message: NSObject {
+
+    init(id: String, message: Data) {
+        self.id = id
+        self.message = message
+    }
+
+    @objc let id: String;
+    @objc let message: Data;
+}
+
 @objc(NearbySwift) class NearbySwift: NSObject {
-    let connectionManager: ConnectionManager
+    var connectionManager: ConnectionManager = ConnectionManager(serviceID: "temp", strategy: .pointToPoint)
     var advertiser: Advertiser?
     var discoverer: Discoverer?
     var name = "Iphone"
@@ -10,14 +21,23 @@ import NearbyConnections
     @objc public var onDiscoverDevice: (String, String) -> Void = { (p1, p2) -> Void in }
     @objc public var onDeviceLost: (String) -> Void = { (p1) -> Void in }
     @objc public var onConnectionStateChange: (String, String) -> Void = { (p1, p2) -> Void in }
+    @objc public var onReceiveData: (Data, String) -> Bool = { (p1, p2) -> Bool in true }
 
     @objc override init() {
-        connectionManager = ConnectionManager(serviceID: "fr.imacaron.torri", strategy: .pointToPoint)
         super.init()
+    }
+
+    func initConnectionManager(star: Bool) {
+        if (star) {
+            connectionManager = ConnectionManager(serviceID: "fr.imacaron.torri", strategy: .star)
+        } else {
+            connectionManager = ConnectionManager(serviceID: "fr.imacaron.torri", strategy: .pointToPoint)
+        }
         connectionManager.delegate = self
     }
 
-    @objc public func startAdvertising() {
+    @objc public func startAdvertising(star: Bool) {
+        initConnectionManager(star: star)
         advertiser = Advertiser(connectionManager: connectionManager)
         advertiser?.delegate = self
         advertiser?.startAdvertising(using: "IPhone".data(using: .utf8)!)
@@ -28,7 +48,8 @@ import NearbyConnections
         advertiser = nil
     }
 
-    @objc public func startDiscovery() {
+    @objc public func startDiscovery(star: Bool) {
+        initConnectionManager(star: star)
         discoverer = Discoverer(connectionManager: connectionManager)
         discoverer?.delegate = self
         discoverer?.startDiscovery()
@@ -52,24 +73,19 @@ import NearbyConnections
     }
 
     @objc public func sendData(data: Data, endpointId: EndpointID) {
+        print("send data")
         connectionManager.send(data, to: [endpointId])
     }
 
-    private var data: Data? = nil
     private var status: TransferUpdate = .failure
 
-    @objc public func receiveData() async throws -> Data? {
-        var success = false
-        while(!success) {
+    private var data: Array<Message> = Array()
+
+    @objc public func receiveData() async throws -> Message? {
+        while(data.count == 0) {
             try await Task.sleep(for: .milliseconds(200))
-            switch status {
-            case .success:
-                success = true
-                break
-            default: continue
-            }
         }
-        return data
+        return data.removeFirst()
     }
 }
 
@@ -83,7 +99,9 @@ extension NearbySwift: ConnectionManagerDelegate {
     func connectionManager(
         _ connectionManager: ConnectionManager, didReceive data: Data,
         withID payloadID: PayloadID, from endpointID: EndpointID) {
-        self.data = data
+        if(self.onReceiveData(data, endpointID)) {
+            self.data.append(Message(id: endpointID, message: data))
+        }
     }
 
     func connectionManager(
