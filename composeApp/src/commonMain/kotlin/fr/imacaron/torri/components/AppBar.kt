@@ -90,8 +90,10 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, com
 					Icon(Lucide.ServerOff, "Fermer la connexion")
 				}
 			} else if(slaveCommandViewModel.isOnline) {
-				IconButton({ navController.navigate(Destination.SERVICE_COMMAND_DETAIL.route) }) {
-					Icon(Lucide.BookText, "Détails des commandes", tint = MaterialTheme.colorScheme.primary)
+				if(currentRoute != Destination.SERVICE_COMMAND_DETAIL.route) {
+					IconButton({ navController.navigate(Destination.SERVICE_COMMAND_DETAIL.route) }) {
+						Icon(Lucide.BookText, "Détails des commandes", tint = MaterialTheme.colorScheme.primary)
+					}
 				}
 				IconButton({
 					slaveCommandViewModel.disconnect()
@@ -107,7 +109,7 @@ fun AppBar(navController: NavController, serviceViewModel: ServiceViewModel, com
 			}
 		},
 		navigationIcon = {
-			if('/' in currentRoute) {
+			if('/' in currentRoute && currentRoute != Destination.SERVICE_COMMAND_SLAVE.route) {
 				IconButton({ navController.popBackStack() }) {
 					Icon(
 						Lucide.ArrowLeft,

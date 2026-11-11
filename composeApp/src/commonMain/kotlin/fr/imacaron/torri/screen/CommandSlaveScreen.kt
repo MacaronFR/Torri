@@ -21,7 +21,6 @@ import fr.imacaron.torri.components.ItemSelection
 import fr.imacaron.torri.viewmodel.SlaveCommandViewModel
 import kotlinx.coroutines.DelicateCoroutinesApi
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun CommandSlaveScreen(slaveCommandViewModel: SlaveCommandViewModel, cols: Int, displaySidePanel: Boolean, portrait: Boolean) {
 	if(!slaveCommandViewModel.connected) {
