@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
 	alias(libs.plugins.kotlinMultiplatform)
@@ -13,14 +13,12 @@ plugins {
 
 kotlin {
 	androidTarget {
-		@OptIn(ExperimentalKotlinGradlePluginApi::class)
 		compilerOptions {
 			jvmTarget.set(JvmTarget.JVM_11)
 		}
 	}
 
-	listOf(
-		iosX64(),
+	listOf<KotlinNativeTarget>(
 		iosArm64(),
 		iosSimulatorArm64()
 	).forEach { iosTarget ->
@@ -96,8 +94,8 @@ android {
 		applicationId = "fr.imacaron.torri"
 		minSdk = libs.versions.android.minSdk.get().toInt()
 		targetSdk = libs.versions.android.targetSdk.get().toInt()
-		versionCode = 12
-		versionName = "1.8.1"
+		versionCode = 13
+		versionName = "1.9.0"
 		addManifestPlaceholders(
 			mapOf("oidcRedirectScheme" to "fr.imacaron.torri")
 		)
@@ -123,9 +121,9 @@ dependencies {
 	coreLibraryDesugaring(libs.desugar.jdk.libs)
 	debugImplementation(libs.ui.tooling)
 	add("kspAndroid", libs.room.compiler)
-	add("kspIosSimulatorArm64", libs.room.compiler)
-	add("kspIosX64", libs.room.compiler)
-	add("kspIosArm64", libs.room.compiler)
+//	add("kspIosSimulatorArm64", libs.room.compiler)
+//	add("kspIosX64", libs.room.compiler)
+//	add("kspIosArm64", libs.room.compiler)
 }
 
 room {
