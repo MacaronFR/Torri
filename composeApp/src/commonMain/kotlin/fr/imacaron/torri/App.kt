@@ -237,7 +237,7 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                                 this.getStringOrNull("id")?.toLongOrNull()
                             } ?: 0L
                             val item = savedItems.items.find { item -> item.idItem == id } ?: return@composable Text("Error")
-                            ItemEditScreen(savedItems, navigationController, item)
+                            ItemEditScreen(savedItems, navigationController, item, commandViewModel, priceList)
                         }
                         composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, {
                             savedItems.reload()

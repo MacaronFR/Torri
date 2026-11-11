@@ -107,7 +107,8 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 		var selectedItem by remember { mutableStateOf<ItemEntity?>(null) }
 		val onDone = {
 			if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
-				items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = -1, price = price.toDouble()))
+				val index = items.maxByOrNull { it.index }?.index ?: 0
+				items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = -1, price = price.toDouble(), index = index + 1))
 				itemsId.add(selectedItem!!.idItem)
 				price = ""
 				addItemDialog = false
@@ -148,7 +149,8 @@ fun PriceListAddScreen(priceList: PriceListViewModel, savedItems: SavedItemViewM
 				Row(Modifier.padding(16.dp, 8.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End) {
 					TextButton({
 						if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
-							items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = -1, price = price.toDouble()))
+							val index = (items.maxByOrNull { it.index }?.index ?: 0) + 1
+							items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = -1, price = price.toDouble(), index = index))
 							itemsId.add(selectedItem!!.idItem)
 							price = ""
 							addItemDialog = false

@@ -1,5 +1,6 @@
 package fr.imacaron.torri.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
@@ -16,7 +17,7 @@ interface PriceListItemDao {
 	@Insert
 	suspend fun insertAll(priceListItems: List<PriceListItemEntity>): List<Long>
 
-	@Query("SELECT * FROM PriceListItemEntity WHERE idPriceList = :idPriceList")
+	@Query("SELECT * FROM PriceListItemEntity WHERE idPriceList = :idPriceList ORDER BY `index`")
 	suspend fun getAlByPriceList(idPriceList: Long): List<PriceListItemEntity>
 
 	@Update
@@ -31,5 +32,7 @@ data class PriceListItemEntity(
 	@PrimaryKey(autoGenerate = true) val idPriceListItem: Long = 0L,
 	var idItem: Long,
 	var price: Double,
-	var idPriceList: Long
+	var idPriceList: Long,
+	@ColumnInfo(defaultValue = "0")
+	var index: Int
 )

@@ -35,13 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import fr.imacaron.torri.data.ItemEntity
+import fr.imacaron.torri.viewmodel.CommandViewModel
+import fr.imacaron.torri.viewmodel.PriceListViewModel
 import fr.imacaron.torri.viewmodel.SavedItemViewModel
 import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
 
 @Composable
-fun ItemEditScreen(savedItems: SavedItemViewModel, navController: NavController, item: ItemEntity) {
+fun ItemEditScreen(savedItems: SavedItemViewModel, navController: NavController, item: ItemEntity, commandViewModel: CommandViewModel, priceListViewModel: PriceListViewModel) {
 	var name by remember { mutableStateOf(item.name) }
 	var image by remember { mutableStateOf(item.image) }
 	var imageDialog by remember { mutableStateOf(false) }
@@ -56,6 +58,9 @@ fun ItemEditScreen(savedItems: SavedItemViewModel, navController: NavController,
 		Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), horizontalArrangement = Arrangement.End) {
 			Button( {
 				savedItems.update(item.copy(name = name, image = image))
+				savedItems.reload()
+				priceListViewModel.loadPriceLists()
+				commandViewModel.loadService()
 				navController.popBackStack()
 				name = ""
 				image = Res.allDrawableResources.keys.first()

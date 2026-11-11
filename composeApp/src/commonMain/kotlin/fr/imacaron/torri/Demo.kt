@@ -43,8 +43,8 @@ private fun createItems(savedItems: SavedItemViewModel) {
 }
 
 private fun createPriceList(priceListViewModel: PriceListViewModel, items: List<ItemEntity>) {
-	val prices = items.map { item ->
-		PriceListItemEntity(idItem = item.idItem, price = item.idItem * 1.5, idPriceList = -1L)
+	val prices = items.mapIndexed { index, item ->
+		PriceListItemEntity(idItem = item.idItem, price = item.idItem * 1.5, idPriceList = -1L, index = index)
 	}
 	priceListViewModel.create("Carte 1", "€", prices)
 }

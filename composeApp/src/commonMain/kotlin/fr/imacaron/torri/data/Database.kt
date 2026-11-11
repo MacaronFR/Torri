@@ -23,10 +23,11 @@ import kotlin.time.Instant
 
 @Database(
 	entities = [ItemEntity::class, PriceListEntity::class, PriceListItemEntity::class, CommandEntity::class, CommandPriceListItemEntity::class, ServiceEntity::class],
-	version = 3,
+	version = 4,
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2, spec = Migration1to2Spec::class),
-		AutoMigration(from = 2, to = 3)
+		AutoMigration(from = 2, to = 3),
+		AutoMigration(from = 3, to = 4)
 	]
 )
 @TypeConverters(Converters::class)
@@ -112,7 +113,8 @@ data class PriceListExport(
 data class PricesExport(
 	val id: Long,
 	val item: Long,
-	val price: Double
+	val price: Double,
+	val index: Int = 0
 )
 
 suspend fun exportDatabase(db: AppDataBase): String {
@@ -144,7 +146,7 @@ suspend fun importDatabase(data: String, db: AppDataBase) {
 					val priceListEntity = PriceListEntity(idPriceList = priceList.id, name = priceList.name, currency = priceList.currency)
 					val priceListId = db.priceListDao().insert(priceListEntity)
 					priceList.prices.forEach { price ->
-						db.priceListItemDao().insert(PriceListItemEntity(idPriceListItem = price.id, idItem = price.item, price = price.price, idPriceList = priceListId))
+						db.priceListItemDao().insert(PriceListItemEntity(idPriceListItem = price.id, idItem = price.item, price = price.price, idPriceList = priceListId, index = price.index))
 					}
 				}
 			} catch (t: Throwable) {

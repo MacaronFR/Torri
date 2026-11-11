@@ -48,10 +48,7 @@ import fr.imacaron.torri.viewmodel.ServiceViewModel
 @Composable
 fun CommandScreen(cols: Int, displaySidePanel: Boolean, serviceViewModel: ServiceViewModel, navController: NavController, priceListViewModel: PriceListViewModel, commandViewModel: CommandViewModel, portrait: Boolean) {
 	commandViewModel.loadService()
-	val service = serviceViewModel.currentService
-	if(service == null) {
-		return
-	}
+	val service = serviceViewModel.currentService ?: return
 	commandViewModel.service = service
 	val priceList = priceListViewModel.priceLists.find { it.priceList.idPriceList == service.idPriceList }
 	if(priceList == null) {
@@ -136,15 +133,13 @@ fun ItemSelection(cols: Int, items: List<ItemEntity>, prices: List<PriceListItem
 		horizontalArrangement = Arrangement.spacedBy(8.dp),
 		modifier = modifier
 	) {
-		items(items) { item ->
-			prices.find { it.idItem == item.idItem }?.let { price ->
-				ItemView(
-					item,
-					price.price,
-					priceList.priceList.currency,
-					{ commandViewModel.add(price) },
-					{ commandViewModel.remove(price) })
-			}
+		items(prices.sortedBy { it.index }) { price ->
+			ItemView(
+				items.find { it.idItem == price.idItem } ?: return@items,
+				price.price,
+				priceList.priceList.currency,
+				{ commandViewModel.add(price) },
+				{ commandViewModel.remove(price) })
 		}
 	}
 }

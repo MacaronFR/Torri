@@ -2,15 +2,23 @@ package fr.imacaron.torri.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.draggable2D
+import androidx.compose.foundation.gestures.rememberDraggable2DState
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -37,12 +45,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.composables.icons.lucide.GripVertical
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
 import com.composables.icons.lucide.Pen
@@ -62,6 +74,7 @@ import org.jetbrains.compose.resources.painterResource
 import torri.composeapp.generated.resources.Res
 import torri.composeapp.generated.resources.allDrawableResources
 import kotlin.collections.get
+import kotlin.math.abs
 
 @Composable
 fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: SavedItemViewModel, navController: NavController, id: Long, serviceViewModel: ServiceViewModel, snackBarState: SnackbarHostState, commandViewModel: CommandViewModel) {
@@ -73,6 +86,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 	val scope = rememberCoroutineScope()
 	LaunchedEffect(priceList) {
 		if(priceList != null) {
+			items.clear()
 			items.addAll(priceListViewModel.getPriceListItems(priceList.priceList))
 			itemsId.addAll(items.map { it.idItem })
 		}
@@ -107,6 +121,7 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 					if(priceList == null) {
 						return@Button
 					}
+					items.forEachIndexed { index, entity -> entity.index = index }
 					priceListViewModel.update(priceList.priceList.idPriceList, name, currency, items.toList())
 					commandViewModel.loadService()
 					navController.popBackStack()
@@ -114,19 +129,46 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 			}
 		}
 		Card(Modifier.padding(horizontal = 4.dp).fillMaxWidth()) {
-			Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp).fillMaxWidth()) {
-				Text("Produits", style = MaterialTheme.typography.headlineSmall)
-				IconButton({ addItemDialog = true }) {
-					Icon(Lucide.Plus, contentDescription = "Ajouter un produit")
+			LazyColumn(Modifier.padding(16.dp).fillMaxWidth()) {
+				item {
+					Row(horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp).fillMaxWidth()) {
+						Text("Produits", style = MaterialTheme.typography.headlineSmall)
+						IconButton({ addItemDialog = true }) {
+							Icon(Lucide.Plus, contentDescription = "Ajouter un produit")
+						}
+					}
 				}
-			}
-			Column(Modifier.padding(16.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
 				if(items.isEmpty()) {
-					Text("Aucun produit", Modifier.padding(16.dp).fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+					item {
+						Text("Aucun produit", Modifier.padding(16.dp).fillMaxWidth(), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+					}
 				}
-				items.forEach { item ->
+				itemsIndexed(items, { _, item -> item.idPriceListItem }) { index, item ->
+					var y by remember { mutableStateOf(0f) }
+					var h by remember { mutableStateOf(0) }
+					val state = rememberDraggableState {
+						if(index == 0 && it < 0) {
+							return@rememberDraggableState
+						}
+						if(index == items.size - 1 && it > 0) {
+							return@rememberDraggableState
+						}
+						y += it
+						if(y > h) {
+							val nextItem = items[index + 1]
+							items.removeAt(index + 1)
+							items.add(index, nextItem)
+							y = 0f
+						} else if(y < -h) {
+							val prevItem = items[index - 1]
+							items.removeAt(index - 1)
+							items.add(index, prevItem)
+							y = 0f
+						}
+					}
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
-					Row(verticalAlignment = Alignment.CenterVertically) {
+					Row(Modifier.draggable(state, Orientation.Vertical, onDragStopped = { y = 0f }).offset { IntOffset(0, y.toInt()) }.onGloballyPositioned { h = it.size.height }, verticalAlignment = Alignment.CenterVertically) {
+						Icon(Lucide.GripVertical, contentDescription = "Déplacer")
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
 						Text("${itemEntity?.name}: ${item.price.formatPrice()} $currency")
 						Spacer(Modifier.weight(1f))
@@ -160,7 +202,8 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 		val onDone = {
 			if(price.toDoubleOrNull() != null && price.isNotEmpty() && selectedItem != null) {
 				if(priceList != null) {
-					items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = priceList.priceList.idPriceList, price = price.toDouble()))
+					val index = (items.maxByOrNull { it.index }?.index ?: 0) + 1
+					items.add(PriceListItemEntity(idItem = selectedItem!!.idItem, idPriceList = priceList.priceList.idPriceList, price = price.toDouble(), index = index))
 					itemsId.add(selectedItem!!.idItem)
 					price = ""
 					addItemDialog = false

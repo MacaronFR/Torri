@@ -57,7 +57,7 @@ class PriceListViewModel(private val db: AppDataBase): ViewModel() {
 					if(newItem.idPriceListItem !in oldItemsId) {
 						db.priceListItemDao().insert(newItem)
 					} else {
-						val updatedItem = PriceListItemEntity(newItem.idPriceListItem, newItem.idItem, newItem.price, id)
+						val updatedItem = PriceListItemEntity(newItem.idPriceListItem, newItem.idItem, newItem.price, id, newItem.index)
 						db.priceListItemDao().update(updatedItem)
 					}
 				}
