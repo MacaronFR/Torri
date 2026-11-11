@@ -6,6 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ import fr.imacaron.torri.screen.CommandDetailScreen
 import fr.imacaron.torri.screen.CommandScreen
 import fr.imacaron.torri.screen.ConfScreen
 import fr.imacaron.torri.screen.ItemAddScreen
+import fr.imacaron.torri.screen.ItemEditScreen
 import fr.imacaron.torri.screen.ItemScreen
 import fr.imacaron.torri.screen.LoadingScreen
 import fr.imacaron.torri.screen.LoginScreen
@@ -75,6 +77,7 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
     PRICE_LIST_EDIT("pricelist/edit/{id}", "Modifier une carte", Lucide.SquareMenu),
     ITEMS("items", "Produits", Lucide.Inbox),
     ITEMS_ADD("items/add", "Ajouter un produit", Lucide.Inbox),
+    ITEMS_EDIT("items/edit/{id}", "Modifier un produit", Lucide.Inbox),
     CONF("conf", "Configuration", Lucide.Cog),
     CONF_SUMUP_LOGIN("conf/sumup/login", "Connexion SumUp", Lucide.Cog);
 
@@ -229,6 +232,13 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                         }
                         composable(Destination.ITEMS.route) { ItemScreen(savedItems, priceList, snackBarState, navigationController) }
                         composable(Destination.ITEMS_ADD.route) { ItemAddScreen(savedItems, navigationController) }
+                        composable(Destination.ITEMS_EDIT.route) { backStackEntry ->
+                            val id = backStackEntry.arguments?.read {
+                                this.getStringOrNull("id")?.toLongOrNull()
+                            } ?: 0L
+                            val item = savedItems.items.find { item -> item.idItem == id } ?: return@composable Text("Error")
+                            ItemEditScreen(savedItems, navigationController, item)
+                        }
                         composable(Destination.CONF.route) { ConfScreen(dataStore, snackBarState, reloadConfScreen, {
                             savedItems.reload()
                             priceList.loadPriceLists()

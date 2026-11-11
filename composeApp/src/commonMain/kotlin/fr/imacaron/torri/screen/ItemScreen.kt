@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Minus
+import com.composables.icons.lucide.Pencil
 import com.composables.icons.lucide.Plus
 import fr.imacaron.torri.Destination
 import fr.imacaron.torri.data.ItemEntity
@@ -61,6 +62,9 @@ fun ItemScreen(savedItems: SavedItemViewModel, priceListViewModel: PriceListView
 						Image(painterResource(Res.allDrawableResources[it.image]!!), "Image de ${it.name}", Modifier.size(48.dp).padding(end = 8.dp))
 						Text(it.name, style = MaterialTheme.typography.headlineSmall)
 						Spacer(Modifier.weight(1f))
+						IconButton( { navHost.navigate(Destination.ITEMS_EDIT.routeWithArg("id" to it.idItem.toString())) } ) {
+							Icon(Lucide.Pencil, "Éditer le produit ${it.name}")
+						}
 						IconButton( {
 							if(priceListViewModel.priceLists.any { pl -> pl.items.any { i -> i.idItem == it.idItem } }) {
 								scope.launch {

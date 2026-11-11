@@ -58,4 +58,14 @@ class SavedItemViewModel(
 		}
 		return false
 	}
+
+	fun update(item: ItemEntity) {
+		if(item.idItem in items.map { it.idItem }) {
+			viewModelScope.launch {
+				db.itemDao().update(item)
+			}
+			val i = items.indexOfFirst { it.idItem == item.idItem }
+			items[i] = item
+		}
+	}
 }

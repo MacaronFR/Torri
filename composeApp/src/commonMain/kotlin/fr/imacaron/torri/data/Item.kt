@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface ItemDao {
@@ -17,6 +18,9 @@ interface ItemDao {
 
 	@Delete
 	suspend fun delete(item: ItemEntity): Int
+
+	@Update
+	suspend fun update(item: ItemEntity): Int
 }
 
 @Entity
