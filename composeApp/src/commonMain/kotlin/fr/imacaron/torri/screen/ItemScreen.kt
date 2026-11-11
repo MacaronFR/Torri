@@ -21,6 +21,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +48,9 @@ import torri.composeapp.generated.resources.allDrawableResources
 fun ItemScreen(savedItems: SavedItemViewModel, priceListViewModel: PriceListViewModel, snackBarState: SnackbarHostState, navHost: NavHostController) {
 	val scope = rememberCoroutineScope()
 	var item by remember { mutableStateOf<ItemEntity?>(null) }
+	LaunchedEffect(savedItems) {
+		savedItems.reload()
+	}
 	Column {
 		Text("Produits", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(16.dp))
 		OutlinedCard(Modifier.padding(8.dp).fillMaxWidth().clickable(onClick = { navHost.navigate(Destination.ITEMS_ADD.route) })) {

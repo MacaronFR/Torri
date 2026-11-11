@@ -167,8 +167,8 @@ fun PriceListEditScreen(priceListViewModel: PriceListViewModel, savedItems: Save
 						}
 					}
 					val itemEntity = savedItems.items.find { it.idItem == item.idItem }
-					Row(Modifier.draggable(state, Orientation.Vertical, onDragStopped = { y = 0f }).offset { IntOffset(0, y.toInt()) }.onGloballyPositioned { h = it.size.height }, verticalAlignment = Alignment.CenterVertically) {
-						Icon(Lucide.GripVertical, contentDescription = "Déplacer")
+					Row(Modifier.offset { IntOffset(0, y.toInt()) }.onGloballyPositioned { h = it.size.height }, verticalAlignment = Alignment.CenterVertically) {
+						Icon(Lucide.GripVertical, "Déplacer", Modifier.draggable(state, Orientation.Vertical, onDragStopped = { y = 0f }))
 						Image(painterResource(Res.allDrawableResources[itemEntity?.image]!!), "Image de ${itemEntity?.name}", Modifier.padding(end = 8.dp).size(32.dp))
 						Text("${itemEntity?.name}: ${item.price.formatPrice()} $currency")
 						Spacer(Modifier.weight(1f))

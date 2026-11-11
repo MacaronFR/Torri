@@ -21,6 +21,7 @@ class SavedItemViewModel(
 		viewModelScope.launch(Dispatchers.IO) {
 			items.clear()
 			items.addAll(db.itemDao().getAll())
+			println("loaded")
 		}
 	}
 
@@ -28,6 +29,7 @@ class SavedItemViewModel(
 		return viewModelScope.launch(Dispatchers.IO) {
 			items.clear()
 			items.addAll(db.itemDao().getAll())
+			println("reloaded")
 		}
 	}
 
@@ -42,6 +44,7 @@ class SavedItemViewModel(
 			db.itemDao().insert(ItemEntity(name = name, image = image))
 			items.clear()
 			items.addAll(db.itemDao().getAll())
+			println("Created")
 		}
 		return true
 	}

@@ -210,7 +210,8 @@ fun App(dataBase: AppDataBase, dataStore: DataStore<Preferences>, windowSizeClas
                     }
                     NavHost(
                         navigationController,
-                        startDestination = if(savedItems.items.isEmpty()) Destination.ITEMS.route else if(priceList.priceLists.isEmpty()) Destination.PRICE_LIST.route else Destination.SERVICE.route,
+                        startDestination = Destination.SERVICE.route,
+//                        startDestination = if(savedItems.items.isEmpty()) Destination.ITEMS.route else if(priceList.priceLists.isEmpty()) Destination.PRICE_LIST.route else Destination.SERVICE.route,
                     ) {
                         composable(Destination.SERVICE.route) { ServiceScreen(serviceViewModel, priceList, navigationController) }
                         composable(Destination.SERVICE_DETAIL.route) { backStackEntry ->
