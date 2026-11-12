@@ -27,6 +27,7 @@ ktor = "3.6.1"
 oidc = "0.18.4"
 nearby-version = "19.3.0"
 uiToolingPreview = "1.12.2"
+coreKtx = "1.19.1"
 
 [libraries]
 adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
@@ -35,6 +36,8 @@ androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:life
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "animation" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
+compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferencesVersion" }
 datastore = { module = "androidx.datastore:datastore", version.ref = "datastoreVersion" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
@@ -58,14 +61,15 @@ oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsu
 oidc-ktor = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-ktor", version.ref = "oidc" }
 play-services-nearby-android = { group = "com.google.android.gms", name = "play-services-nearby", version.ref = "nearby-version" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "uiToolingPreview" }
-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
+androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref="room" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
